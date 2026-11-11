@@ -1,0 +1,12 @@
+{
+  "release": "2026-11-10 Signature Modern",
+  "files": {
+    "www/index.html": "ef1c4d0b5146f4fcec9aa628f30bf422e60e4851d01fad10d6b9c26b76540001",
+    "www/styles.css": "acea8386e0b9a6ea73f29bc42d6e9a7a2680f0e89025665e1eee7d0ef19a3c26",
+    "www/modern.css": "bb1ce4b5c094e37b1f2d83ac986a1478eb609ddb5a3976fb56a72d50a2d14eb2",
+    "www/translations.js": "24073a7965ad32cf2f275f9aef03c3128c20873a6ec799fd0a8abc730ace3510",
+    "www/app.js": "1a8ed5fe0f3fb257a5ed0d356bb876fe10a3f81013e85cf51bd3e23da0ba952a",
+    "www/designs.html": "db0da907f374b42a733a7d3466bc8d703abd6ddacd45b28ec68b925e7bc9a242",
+    "www/api/applications.php": "ddce90dd0a2cdcdc579175b9b0f1f9997242144268990d28ed91f2937e750502"
+  }
+}
