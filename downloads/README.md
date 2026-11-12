@@ -1,10 +1,9 @@
-Emplivo hosting package
+Emplivo hosting package — corrected public permissions
 
-Download downloads/emplivo.zip using the Download raw file button.
-Extract beside the existing www directory on the PHP hosting account.
-Keep emplivo-private/config.php outside www. The ZIP contains no private config.
-Six jobs and three employers are explicitly fictional demonstrations.
-Emplivo contact: +380 (67) 777 80 60.
-Instructions are included as INSTALL_UA.md inside the ZIP.
-
-SHA256: 0e5eee084f2526aafca59ee291f560dbf968c8dbbea7d86bdbe2333303fccd66
+Download downloads/emplivo-fixed.zip using Download raw file.
+Extract beside the existing www directory, replacing public files.
+Public files: 644. Public directories: 755.
+Verify www/index.html exists; not www/www/index.html.
+Keep private configuration outside www and preserve its private permissions.
+Fictional job data is marked DEMO. Contact: +380 (67) 777 80 60.
+SHA256: 32557c076606349a647e65cb74c8b434395c5700645918280b10dadef53c78da
