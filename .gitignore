@@ -1,0 +1,8 @@
+/emplivo-private/
+/test-results/
+/releases/
+__pycache__/
+.env
+.env.*
+deploy-keys/
+*.pem

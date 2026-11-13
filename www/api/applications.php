@@ -32,6 +32,11 @@ if (!str_starts_with(strtolower($_SERVER['CONTENT_TYPE'] ?? ''), 'multipart/form
     respond(['message' => 'Неправильний формат заявки. Оновіть сторінку.'], 415);
 }
 
+// Demo vacancies must never reach the production application service.
+if (is_string($_POST['role'] ?? null) && str_starts_with($_POST['role'], 'demo-')) {
+    respond(['message' => 'Демонстраційні заявки не надсилаються в базу.'], 422);
+}
+
 try {
     $configPath = dirname(__DIR__, 2) . '/emplivo-private/config.php';
     if (!is_readable($configPath)) {

@@ -8,7 +8,7 @@
   document.documentElement.dataset.design = design;
   let storedLanguage;
   try { storedLanguage = localStorage.getItem('emplivo-language'); } catch {}
-  let language = ['uk', 'en'].includes(params.get('lang')) ? params.get('lang') : ['uk', 'en'].includes(storedLanguage) ? storedLanguage : 'uk';
+  let language = ['uk', 'en'].includes(params.get('lang')) ? params.get('lang') : (document.documentElement.lang === 'en' ? 'en' : ['uk', 'en'].includes(storedLanguage) ? storedLanguage : 'uk');
   const t = key => dictionaries[language][key] || dictionaries.uk[key] || key;
   const form = $('#candidate-form');
   const role = form.elements.role;
@@ -23,13 +23,18 @@
   let submitting = false;
   let pending = null;
   let savedId = null;
-  const jobId = 'kitchen-helper-ua-001';
+  const jobs = window.EMPLIVO_JOBS || [];
+  const jobById = new Map(jobs.map(job => [job.id, job]));
   const fields = ['fullName', 'phone', 'email', 'role', 'destination', 'experience', 'cv', 'consent'];
+  const interests = {'spa-therapist':['SPA-терапевт','Spa therapist'], 'personal-trainer':['Персональний тренер','Personal trainer'], 'wellness-manager':['Wellness-менеджер','Wellness manager']};
+  const interest = interests[params.get('interest')];
+  if (interest && !form.elements.experience.value) form.elements.experience.value = (language === 'en' ? 'Preferred role: ' + interest[1] : 'Бажаний напрям: ' + interest[0]) + '\n';
 
   const stepGroups = [['fullName', 'phone', 'email'], ['role', 'destination', 'experience'], ['cv', 'consent']];
-  let currentStep = 0, reachedStep = 0, activeTab = 0;
-  let jobSaved = false, savedOnly = false;
-  try { jobSaved = localStorage.getItem('emplivo-saved-role') === jobId; } catch {}
+  let currentStep = 0, reachedStep = 0;
+  let savedOnly = false;
+  let savedJobs = new Set();
+  try { const stored = JSON.parse(localStorage.getItem('emplivo-saved-demo-jobs') || '[]'); if (Array.isArray(stored)) savedJobs = new Set(stored.filter(id => jobById.has(id))); } catch {}
 
   function showStep(index, focus = false) {
     currentStep = index;
@@ -48,8 +53,9 @@
     $('#form-back').hidden = currentStep === 0;
     $('#form-next').hidden = currentStep === 2;
     submit.hidden = currentStep !== 2;
+    updateApplicationMode();
     $('#summary-contact').textContent = [form.elements.fullName.value, form.elements.phone.value, form.elements.email.value].filter(Boolean).join(' · ');
-    $('#summary-role').textContent = role.value === jobId ? t('roleOption') : t('generalApplication');
+    $('#summary-role').textContent = jobById.has(role.value) ? jobById.get(role.value).title[language] + ' · DEMO' : t('generalApplication');
     $('#summary-destination').textContent = t({ any:'anyDestination', ukraine:'ukraine', other:'otherCountries' }[destination.value] || 'anyDestination');
   }
   function focusFieldError() {
@@ -63,21 +69,26 @@
     globalError = null;
     if (validate(stepGroups[currentStep])) showStep(Math.min(currentStep + 1, 2), true);
   }
+  function updateApplicationMode() {
+    const demo = jobById.has(role.value);
+    $('#application-mode').textContent = t(demo ? 'demoMode' : 'realMode');
+    $('#application-mode').classList.toggle('is-demo', demo);
+    submit.textContent = t(submitting ? 'submitting' : demo ? 'demoSubmit' : 'submit');
+    if (savedId === 'DEMO') {
+      $('[data-i18n="successTitle"]').textContent = t('demoSuccessTitle');
+      $('[data-i18n="successBody"]').textContent = t('demoSuccessBody');
+      $('#application-reference').textContent = 'DEMO';
+    }
+  }
   function renderSaved() {
-    $('#save-job').setAttribute('aria-pressed', String(jobSaved));
-    $('#save-job-label').textContent = t(jobSaved ? 'savedJob' : 'saveJob');
-    $('#saved-only').setAttribute('aria-pressed', String(savedOnly));
-    $('#saved-only').textContent = t('savedFilter') + ' (' + (jobSaved ? 1 : 0) + ')';
-  }
-  function selectTab(index, focus = false) {
-    activeTab = index;
-    $$('[data-tab]').forEach((button, i) => {
-      button.setAttribute('aria-selected', String(i === index)); button.tabIndex = i === index ? 0 : -1;
-      $('#job-panel-' + i).hidden = i !== index;
-      if (focus && i === index) button.focus();
+    $$('[data-save-job]').forEach(button => {
+      const saved = savedJobs.has(button.dataset.saveJob);
+      button.setAttribute('aria-pressed', String(saved));
+      $('.save-label', button).textContent = t(saved ? 'savedJob' : 'saveJob');
     });
+    $('#saved-only').setAttribute('aria-pressed', String(savedOnly));
+    $('#saved-only').textContent = t('savedFilter') + ' (' + savedJobs.size + ')';
   }
-
   function renderErrors() {
     $('#remove-cv').hidden = !cv.files.length;
     for (const name of fields) {
@@ -96,14 +107,18 @@
 
   function filterJobs() {
     const normalize = value => value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[’ʼ']/g, '');
-    const query = normalize($('#job-search').value.trim());
-    const haystack = normalize('Помічник кухаря кухня харчування Kitchen Helper kitchen food service Умань Уманський регіон Uman region Україна Ukraine Filipino Philippines Філіппіни E-UA-001');
+    const words = normalize($('#job-search').value.trim()).split(/\s+/);
     const country = $('#country-filter').value;
     const sector = $('#sector-filter').value;
-    const matches = (!savedOnly || jobSaved) && query.split(/\s+/).every(word => haystack.includes(word)) && (country === 'all' || country === 'ukraine') && (sector === 'all' || sector === 'kitchen');
-    $('#kitchen-job').hidden = !matches;
-    $('#job-empty').hidden = matches;
-    $('#job-count').textContent = t('resultCount').replace('{count}', matches ? '1' : '0');
+    let count = 0;
+    for (const job of jobs) {
+      const haystack = normalize([job.title.uk, job.title.en, job.city.uk, job.city.en, job.sector, job.employer.name.uk, job.employer.name.en, 'Україна Ukraine'].join(' '));
+      const matches = (!savedOnly || savedJobs.has(job.id)) && words.every(word => haystack.includes(word)) && (country === 'all' || country === 'ukraine') && (sector === 'all' || sector === job.sector);
+      document.getElementById(job.id).hidden = !matches;
+      if (matches) count++;
+    }
+    $('#job-empty').hidden = count > 0;
+    $('#job-count').textContent = t('resultCount').replace('{count}', String(count));
   }
 
   const services = { recruitment: ['serviceOneTitle', 'recruitmentDetails'], international: ['serviceTwoTitle', 'internationalDetails'], support: ['serviceThreeTitle', 'supportDetails'] };
@@ -129,12 +144,14 @@
     $$('[data-lang]').forEach(el => { el.setAttribute('aria-pressed', String(el.dataset.lang === language)); });
     $('#menu-toggle').setAttribute('aria-label', t($('#menu-toggle').getAttribute('aria-expanded') === 'true' ? 'closeMenu' : 'openMenu'));
     $('#file-label').textContent = cv.files[0]?.name || t('addCv');
-    submit.textContent = t(submitting ? 'submitting' : 'submit');
+    submit.textContent = t(submitting ? 'submitting' : jobById.has(role.value) ? 'demoSubmit' : 'submit');
     if (savedId) $('#application-reference').textContent = t('referencePrefix') + savedId;
     filterJobs(); renderService(); renderErrors(); renderStep(); renderSaved();
+    $$('[data-route]').forEach(link => { link.href = '/' + (language === 'en' ? 'en/' : '') + link.dataset.route; });
+    $('link[rel="canonical"]').href = 'https://www.emplivo.com.ua/' + (language === 'en' ? 'en/' : '');
     if (persist) {
       try { localStorage.setItem('emplivo-language', language); } catch {}
-      const url = new URL(location.href); url.searchParams.set('lang', language);
+      const url = new URL(location.href); url.pathname = language === 'en' ? '/en/' : '/'; url.searchParams.delete('lang');
       try { history.replaceState(null, '', url.pathname + url.search + url.hash); } catch {}
     }
   }
@@ -169,7 +186,8 @@
   $('#reset-filters').addEventListener('click', () => { $('#job-search').value = ''; $('#country-filter').value = 'all'; $('#sector-filter').value = 'all'; savedOnly = false; renderSaved(); filterJobs(); });
 
   function setJobDestination() {
-    if (role.value === jobId) destination.value = 'ukraine';
+    if (jobById.has(role.value)) destination.value = 'ukraine';
+    updateApplicationMode();
     fieldErrors.delete('role'); fieldErrors.delete('destination'); renderErrors();
   }
   role.addEventListener('change', setJobDestination);
@@ -178,7 +196,7 @@
       form.reset(); pending = null; savedId = null; globalError = null; fieldErrors.clear(); reachedStep = 0;
       form.hidden = false; success.hidden = true; translate();
     }
-    role.value = jobId; setJobDestination(); showStep(0);
+    role.value = button.dataset.job || ''; setJobDestination(); showStep(0);
     $('#application').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
     form.elements.fullName.focus({ preventScroll: true });
   }));
@@ -218,9 +236,9 @@
     if (digits.length < 9 || digits.length > 15 || phone.length > 32 || !/^\+?[\d\s().-]+$/.test(phone)) mark('phone', 'errorPhone');
     const email = value('email');
     if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) mark('email', 'errorEmail');
-    if (!['', jobId].includes(role.value)) mark('role', 'errorRole');
+    if (role.value !== '' && !jobById.has(role.value)) mark('role', 'errorRole');
     if (!['any', 'ukraine', 'other'].includes(destination.value)) mark('destination', 'errorDestination');
-    else if (role.value === jobId && destination.value !== 'ukraine') mark('destination', 'errorJobDestination');
+    else if (jobById.has(role.value) && destination.value !== 'ukraine') mark('destination', 'errorJobDestination');
     if (value('experience').length > 3000) mark('experience', 'errorExperience');
     if (!form.elements.consent.checked) mark('consent', 'errorConsent');
     const fileError = fileProblem(); if (fileError) mark('cv', fileError);
@@ -238,7 +256,7 @@
   function busy(value) {
     submitting = value; form.setAttribute('aria-busy', String(value));
     [...form.elements].forEach(input => { input.disabled = value; });
-    submit.textContent = t(value ? 'submitting' : 'submit'); renderStep();
+    submit.textContent = t(value ? 'submitting' : jobById.has(role.value) ? 'demoSubmit' : 'submit'); renderStep();
   }
   function upstreamErrors(errors) {
     const keys = { fullName:'errorName', phone:'errorPhone', email:'errorEmail', role:'errorRole', destination:'errorDestination', experience:'errorExperience', consent:'errorConsent' };
@@ -253,6 +271,9 @@
     if (currentStep < 2) { nextStep(); return; }
     globalError = null;
     if (!validate()) return;
+    if (jobById.has(role.value)) {
+      savedId = 'DEMO'; form.hidden = true; success.hidden = false; updateApplicationMode(); success.focus(); return;
+    }
     if (navigator.onLine === false) { globalError = 'errorOffline'; renderErrors(); return; }
     const data = new FormData(form);
     const file = cv.files[0];
@@ -272,6 +293,7 @@
         renderErrors();
         return;
       }
+      window.emplivoTrack?.('application_submitted', {job_id: role.value || 'general'});
       savedId = result.id; form.hidden = true; success.hidden = false;
       $('#application-reference').textContent = t('referencePrefix') + savedId;
       success.focus();
@@ -288,6 +310,8 @@
     form.hidden = false; success.hidden = true; reachedStep = 0; showStep(0); translate(); form.elements.fullName.focus();
   });
 
+  let applicationStarted = false;
+  form.addEventListener('input', () => { if (!applicationStarted) { applicationStarted = true; window.emplivoTrack?.('begin_application', {job_id:role.value || 'general'}); } });
   $('#form-next').addEventListener('click', nextStep);
   $('#form-back').addEventListener('click', () => showStep(Math.max(0, currentStep - 1), true));
   $$('[data-form-step]').forEach(button => button.addEventListener('click', () => {
@@ -298,32 +322,21 @@
       showStep(target, true);
     }
   }));
-  $('#save-job').addEventListener('click', () => {
-    jobSaved = !jobSaved;
-    try { if (jobSaved) localStorage.setItem('emplivo-saved-role', jobId); else localStorage.removeItem('emplivo-saved-role'); } catch {}
+  $$('[data-save-job]').forEach(button => button.addEventListener('click', () => {
+    const id = button.dataset.saveJob;
+    if (savedJobs.has(id)) savedJobs.delete(id); else savedJobs.add(id);
+    try { localStorage.setItem('emplivo-saved-demo-jobs', JSON.stringify([...savedJobs])); } catch {}
     renderSaved(); filterJobs();
-    $('#interaction-status').textContent = t(jobSaved ? 'savedMessage' : 'removedMessage');
-    if (savedOnly && !jobSaved) $('#saved-only').focus();
-  });
+    window.emplivoTrack?.(savedJobs.has(id) ? 'save_job' : 'unsave_job', {job_id:id});
+    $('#interaction-status').textContent = t(savedJobs.has(id) ? 'savedMessage' : 'removedMessage');
+    if (savedOnly && !savedJobs.has(id)) $('#saved-only').focus();
+  }));
   $('#saved-only').addEventListener('click', () => { savedOnly = !savedOnly; renderSaved(); filterJobs(); });
-  $('#share-job').addEventListener('click', async () => {
-    const url = new URL(location.pathname, location.origin); url.searchParams.set('lang', language); url.hash = 'kitchen-job';
+  $$('[data-share-job]').forEach(button => button.addEventListener('click', async () => {
+    const url = new URL('/' + (language === 'en' ? 'en/' : '') + 'demo-jobs/' + button.dataset.shareJob + '/', location.origin);
     try { await navigator.clipboard.writeText(url.href); $('#interaction-status').textContent = t('linkCopied'); }
     catch { $('#interaction-status').textContent = t('copyLinkManually') + ' ' + url.href; }
-  });
-  $$('[data-tab]').forEach(button => {
-    button.addEventListener('click', () => selectTab(Number(button.dataset.tab)));
-    button.addEventListener('keydown', event => {
-      let next = activeTab;
-      if (event.key === 'ArrowRight') next = (activeTab + 1) % 3;
-      else if (event.key === 'ArrowLeft') next = (activeTab + 2) % 3;
-      else if (event.key === 'Home') next = 0;
-      else if (event.key === 'End') next = 2;
-      else return;
-      event.preventDefault(); selectTab(next, true);
-    });
-  });
-  $$('.view-job').forEach(link => link.addEventListener('click', () => { $('#job-details').open = true; selectTab(0); }));
+  }));
   $$('.faq-item').forEach(item => item.addEventListener('toggle', () => {
     if (item.open) $$('.faq-item').forEach(other => { if (other !== item) other.open = false; });
   }));
@@ -361,8 +374,10 @@
   window.addEventListener('scroll', () => { if (!scrollQueued) { scrollQueued = true; requestAnimationFrame(reflectScroll); } }, { passive:true });
   window.addEventListener('resize', reflectScroll, { passive:true });
   reflectScroll();
-  selectTab(0);
 
+
+  if (jobById.has(params.get('job'))) { role.value = params.get('job'); setJobDestination(); }
+  if (['spa','fitness','wellness'].includes(params.get('sector'))) $('#sector-filter').value = params.get('sector');
   $('#current-year').textContent = new Date().getFullYear();
   translate();
 })();
