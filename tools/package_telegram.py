@@ -6,7 +6,7 @@ from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 ROOT=Path(__file__).resolve().parents[1]
 FILES=[
     'api/telegram-webhook.php', 'api/lib/TelegramBot.php', 'api/lib/TelegramConfig.php',
-    'tools/telegram_admin.php', 'tools/TelegramPrivateConfig.php', 'tools/telegram_init.sh',
+    'tools/telegram_admin.php', 'tools/TelegramPrivateConfig.php', 'tools/TelegramWebhookCheck.php', 'tools/telegram_init.sh',
     'telegram-config.js', 'config/telegram.example.php', 'TELEGRAM_UA.md',
 ]
 output=ROOT/'downloads/emplivo-telegram-setup.zip'
@@ -14,7 +14,8 @@ output.parent.mkdir(exist_ok=True)
 with ZipFile(output,'w',ZIP_DEFLATED) as archive:
     for name in FILES:
         assert not name.startswith('/') and '..' not in Path(name).parts
-        info=ZipInfo(name, (2026,11,17,0,0,0))
+        # Preserve changed source timestamps so PHP OPcache can detect upgrades.
+        info=ZipInfo.from_file(ROOT/name,arcname=name)
         info.create_system=3
         info.external_attr=(0o100644<<16)
         info.compress_type=ZIP_DEFLATED

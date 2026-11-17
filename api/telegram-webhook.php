@@ -5,6 +5,7 @@ ini_set('display_errors', '0');
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');
+header('X-Emplivo-Telegram: 1');
 
 function telegramResponse(int $status): never
 {
@@ -30,6 +31,14 @@ try {
     if ($body === false || strlen($body) > 65536) { telegramResponse(413); }
     $update = json_decode($body, true, 32, JSON_THROW_ON_ERROR);
     if (!is_array($update) || !is_int($update['update_id'] ?? null)) { telegramResponse(400); }
+    // Secret-authenticated operational check: no message processing or Bot API call.
+    if (($update['emplivo_probe'] ?? false) === true && !isset($update['message'])) {
+        echo json_encode(['ok' => true, 'probe' => 'emplivo-webhook', 'php' => PHP_VERSION, 'checks' => [
+            'curl' => extension_loaded('curl'), 'sodium' => extension_loaded('sodium'),
+            'state_writable' => is_string($config['state_dir'] ?? null) && is_dir($config['state_dir']) && is_writable($config['state_dir']),
+        ]]);
+        exit;
+    }
     require_once __DIR__ . '/lib/TelegramBot.php';
     (new \Emplivo\TelegramBot($config))->handle($update);
     telegramResponse(200);

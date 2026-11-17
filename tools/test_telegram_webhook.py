@@ -50,6 +50,17 @@ with TemporaryDirectory(prefix='emplivo-webhook-') as tmp:
         (private/'telegram.php').write_text(config)
         assert request() == 403, 'Missing secret'
         headers={'Content-Type':'application/json','X-Telegram-Bot-Api-Secret-Token':secret}
+        probe=json.dumps({'update_id':0,'emplivo_probe':True}).encode()
+        assert request(data=probe)==403, 'Runtime probe requires the webhook secret'
+        probe_request=Request(f'http://127.0.0.1:{port}/api/telegram-webhook.php',method='POST',data=probe,headers=headers)
+        with urlopen(probe_request,timeout=3) as response:
+            assert response.status==200
+            assert response.headers.get('X-Emplivo-Telegram')=='1'
+            body=response.read()
+            result=json.loads(body)
+            assert result['probe']=='emplivo-webhook'
+            assert all(isinstance(result['checks'][key],bool) for key in ['curl','sodium','state_writable'])
+            assert b'bot_token' not in body and secret.encode() not in body and SECRET_MARKER not in body
         assert request(data=b'bad json',headers=headers) == 400
         assert request(data=b'{}',headers=headers) == 400
         assert request(data=b'x'*65537,headers=headers) == 413

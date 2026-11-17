@@ -6,9 +6,10 @@ if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 ini_set('display_errors', '0');
 require_once dirname(__DIR__) . '/api/lib/TelegramBot.php';
 require_once __DIR__ . '/TelegramPrivateConfig.php';
+require_once __DIR__ . '/TelegramWebhookCheck.php';
 $command = $argv[1] ?? 'help';
-if (!in_array($command, ['init', 'prepare', 'admin-id', 'check', 'diagnose', 'register', 'status', 'disable', 'cleanup'], true)) {
-    echo "Usage: php tools/telegram_admin.php init|prepare|admin-id|check|diagnose|register|status|disable|cleanup [absolute-private-config-path]\n";
+if (!in_array($command, ['init', 'prepare', 'admin-id', 'check', 'diagnose', 'webhook-check', 'register', 'status', 'disable', 'cleanup'], true)) {
+    echo "Usage: php tools/telegram_admin.php init|prepare|admin-id|check|diagnose|webhook-check|register|status|disable|cleanup [absolute-private-config-path]\n";
     exit($command === 'help' ? 0 : 1);
 }
 $stage = 'configuration';
@@ -47,7 +48,7 @@ try {
         }
         echo 'Manager chat ID: ' . ($adminConfigured ? 'configured' : 'not configured; use admin-id') . "\n";
     }
-    if ($command === 'admin-id' || (!$adminConfigured && in_array($command, ['diagnose', 'check', 'status', 'disable'], true))) {
+    if ($command === 'admin-id' || (!$adminConfigured && in_array($command, ['diagnose', 'webhook-check', 'check', 'status', 'disable'], true))) {
         // Bootstrap only: no sendMessage is called with this temporary value.
         $config['admin_chat_id'] = '1';
     }
@@ -105,15 +106,26 @@ try {
         ]]);
         echo "Webhook registered; max_connections=1. Verify status and test from your private chat.\n";
     }
-    if (in_array($command, ['status', 'diagnose'], true)) {
+    if (in_array($command, ['status', 'diagnose', 'webhook-check'], true)) {
         $stage = 'getWebhookInfo';
         $info = $bot->call('getWebhookInfo')['result'] ?? [];
         echo 'Webhook configured: ' . (!empty($info['url']) ? 'yes' : 'no') . "\n";
         echo 'URL matches this site: ' . (($info['url'] ?? '') === $config['site_url'] . '/api/telegram-webhook.php' ? 'yes' : 'no') . "\n";
         echo 'Pending updates: ' . (int) ($info['pending_update_count'] ?? 0) . "\n";
         echo 'Last delivery error (Unix time; 0=none): ' . (int) ($info['last_error_date'] ?? 0) . "\n";
+        echo 'Last delivery failure: ' . \Emplivo\TelegramWebhookCheck::deliveryFailure((string) ($info['last_error_message'] ?? '')) . "\n";
         if ($command === 'diagnose' && !empty($info['url']) && !$adminConfigured) {
             echo "Webhook already configured. Bootstrap admin-id needs polling; inspect the existing setup before disabling its webhook.\n";
+        }
+    }
+    if ($command === 'webhook-check') {
+        $stage = 'webhook_probe';
+        foreach (\Emplivo\TelegramWebhookCheck::probe($config) as $row) {
+            echo 'Endpoint ' . $row['method'] . ': HTTP=' . $row['http'] . '; cURL=' . $row['curl']
+                . '; PHP handler=' . ($row['handler'] ? 'yes' : 'not detected') . "\n";
+            if (isset($row['redirect_to'])) { echo 'Redirect target: ' . $row['redirect_to'] . "\n"; }
+            if (isset($row['php'])) { echo 'Web PHP: ' . $row['php'] . "\n"; }
+            foreach ($row['checks'] ?? [] as $check => $ok) { echo 'Web ' . $check . ': ' . ($ok ? 'OK' : 'FAIL') . "\n"; }
         }
     }
     if ($command === 'disable') {

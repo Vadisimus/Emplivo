@@ -1,5 +1,5 @@
 {
-  "release": "2026-11-17 Wellness — Telegram request format fix and safe diagnostics",
+  "release": "2026-11-17 Wellness — authenticated webhook health checks and safe delivery diagnostics",
   "files": {
     "styles.css": "acea8386e0b9a6ea73f29bc42d6e9a7a2680f0e89025665e1eee7d0ef19a3c26",
     "jobs-data.js": "4453b148f7a92b960a7059f43d2c87118d1db45964520752f996084c7ffe87ef",
@@ -89,12 +89,13 @@
     "en/blog/personal-trainer-employment/index.html": "2c84a6b6c8999cb362205298a0e5d4e5e81eface6c6332f1ac511e9a9cdee3e1",
     "telegram.js": "a295d3aa32e9eef17814194d942b2e8498fbd440a3b2f416b48b2baadcad3e2f",
     "telegram-config.js": "b992f58382aeb1812946a2700fe2317c5e047beae3a3f8f5bd9c001280d8f778",
-    "api/telegram-webhook.php": "ce120102876562c2c284b6b065f0b2b0b051b0ad836b3201f87660c2ec637d06",
+    "api/telegram-webhook.php": "fa5b94e707b058eea97d39c39f7faf43b73dd589454b85e8ea2e3a2dffd45c51",
     "api/lib/TelegramBot.php": "680c63f180bef02b2b970cc2f3e8570524afdfefc8a2ace5af23bfa11e57e8c7",
-    "tools/telegram_admin.php": "f0bda5dfda6eaa564f5d68ff531d0ec037e936664bc4df6958e82f41fbddb3a0",
+    "tools/telegram_admin.php": "6aeed9b0997dc32348eae75dc260b4753f0f3d8841546b56c97f23c6d3e316de",
     "tools/TelegramPrivateConfig.php": "c036341437e0ccd23aea846d53819777b60cd7030937644831bf686324fee321",
-    "downloads/emplivo-telegram-setup.zip": "2539aa1e501930362125f4d7615f22ba8bf2fea6f15eaf6db63ecd63c72a86bf",
+    "downloads/emplivo-telegram-setup.zip": "469781fc07fb40493e53be29e2d54404d3adb0c675639d8801d7734b9929e306",
     "api/lib/TelegramConfig.php": "4a8f5bbebc9e53f27b7d4307948b4f14a58636de60f594ee2f6ddda60a57f580",
-    "tools/telegram_init.sh": "901365f7276483965c913f9567f09f672ecfa570960c1d9cdb4727eaed06d0bc"
+    "tools/telegram_init.sh": "901365f7276483965c913f9567f09f672ecfa570960c1d9cdb4727eaed06d0bc",
+    "tools/TelegramWebhookCheck.php": "c29a54632a5fb61447a19eb1f016dcfb0ed638a8967603e2158dda61066ac49b"
   }
 }

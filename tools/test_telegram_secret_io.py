@@ -21,7 +21,7 @@ with TemporaryDirectory(prefix='emplivo-secret-io-') as tmp:
     shutil.copytree(ROOT/'api',web/'api')
     (web/'tools').mkdir()
     private.mkdir(mode=0o700)
-    for name in ['telegram_admin.php','TelegramPrivateConfig.php','telegram_init.sh']:
+    for name in ['telegram_admin.php','TelegramPrivateConfig.php','TelegramWebhookCheck.php','telegram_init.sh']:
         shutil.copy2(ROOT/'tools'/name,web/'tools'/name)
     (web/'telegram-config.js').write_text('window.EMPLIVO_TELEGRAM = Object.freeze('+json.dumps({
         'groupUrl':'https://t.me/+AbCdeFGhIjKlmN01','botUsername':'Emplivobot','botEnabled':False,

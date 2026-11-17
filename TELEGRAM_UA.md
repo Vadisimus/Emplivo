@@ -150,6 +150,23 @@ HTTP 401 означає відхилений токен, cURL 6 — DNS, 7 — �
 35/60 — TLS/CA, HTTP 409 — конфлікт webhook/опитування, 429 — обмеження частоти.
 Вміст відповіді Telegram, повний URL Bot API й токен не виводяться.
 
+Якщо webhook зареєстрований, але черга зростає, виконайте:
+
+```bash
+php tools/telegram_admin.php webhook-check
+```
+
+Перевірка показує безпечну категорію останньої помилки доставки Telegram,
+HTTP-коди GET та POST вашого PHP endpoint, ознаку виконання нашого обробника,
+а після автентифікації секретом — вебверсію PHP, cURL/Sodium та доступність
+приватного каталогу стану для запису. Нормальний GET — 405, діагностичний POST — 200.
+POST не містить повідомлення кандидата й не викликає Bot API. Перенаправлення
+не виконуються; секрет не надсилається на інший URL. Перевірка не очищає чергу.
+HTTP 301/302 вказує на перенаправлення; 403 без ознаки PHP-обробника може означати
+блокування сервером/WAF; 404 — неправильний публічний шлях; 500 — помилку виконання
+PHP або сервера; 503 з ознакою обробника потребує перевірки приватної конфігурації
+й розширень вебверсії PHP. Версії PHP у SSH та для сайту можуть відрізнятися.
+
 `register` звіряє @username через `getMe`, встановлює webhook із секретом,
 `max_connections=1` та меню команд. Токен не виводиться. Наявний webhook
 буде змінений; використовуйте окремого бота Emplivo, а не чужого робочого бота.
@@ -219,6 +236,7 @@ python tools/configure_telegram.py --group-url 'https://t.me/REAL_GROUP_USERNAME
 ```bash
 php tools/test_telegram.php
 php tools/test_telegram_transport.php
+php tools/test_telegram_webhook_check.php
 php tools/test_telegram_setup.php
 python tools/test_telegram_secret_io.py
 python tools/test_telegram_webhook.py
