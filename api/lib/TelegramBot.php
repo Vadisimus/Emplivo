@@ -3,6 +3,16 @@ declare(strict_types=1);
 
 namespace Emplivo;
 
+final class TelegramTransportException extends \RuntimeException
+{
+    public function __construct(
+        public readonly int $curlCode,
+        public readonly int $httpStatus,
+        public readonly int $apiCode,
+        public readonly int $retryAfter = 0,
+    ) { parent::__construct('Telegram transport failed'); }
+}
+
 /** Private-chat intake only. No applications or contacts are sent to a group. */
 final class TelegramBot
 {
@@ -44,18 +54,21 @@ final class TelegramBot
             }
             $curl = curl_init('https://api.telegram.org/bot' . $this->config['bot_token'] . '/' . $method);
             curl_setopt_array($curl, [
-                CURLOPT_POST => true, CURLOPT_POSTFIELDS => json_encode($payload, JSON_THROW_ON_ERROR),
+                // Bot API parameters are always a JSON object, including getMe {}.
+                CURLOPT_POST => true, CURLOPT_POSTFIELDS => json_encode((object) $payload, JSON_THROW_ON_ERROR),
                 CURLOPT_HTTPHEADER => ['Content-Type: application/json'], CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_CONNECTTIMEOUT => 3, CURLOPT_TIMEOUT => 7, CURLOPT_FOLLOWLOCATION => false,
                 CURLOPT_PROTOCOLS => CURLPROTO_HTTPS, CURLOPT_SSL_VERIFYPEER => true, CURLOPT_SSL_VERIFYHOST => 2,
             ]);
             $body = curl_exec($curl);
             $status = (int) curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
+            $curlCode = curl_errno($curl);
             curl_close($curl);
             $result = is_string($body) ? json_decode($body, true) : null;
-            if ($status !== 200 || !is_array($result) || ($result['ok'] ?? false) !== true) {
+            if ($curlCode !== 0 || $status !== 200 || !is_array($result) || ($result['ok'] ?? false) !== true) {
                 // Never log the request URL, token, contact data or Telegram response body.
-                throw new \RuntimeException('Telegram request failed');
+                throw new TelegramTransportException($curlCode, $status,
+                    (int) ($result['error_code'] ?? 0), (int) ($result['parameters']['retry_after'] ?? 0));
             }
             return $result;
         };

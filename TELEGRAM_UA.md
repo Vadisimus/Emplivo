@@ -136,6 +136,20 @@ php tools/telegram_admin.php register
 php tools/telegram_admin.php status
 ```
 
+Якщо команда завершується помилкою, виконайте:
+
+```bash
+php tools/telegram_admin.php diagnose
+```
+
+Команда показує версію PHP, наявність cURL/Sodium, заповненість полів без
+їхніх значень, username через `getMe` і стан webhook. Вона не надсилає
+повідомлень та не реєструє webhook; працює й до збереження ID менеджера.
+Помилки містять лише назву етапу та числові коди cURL/HTTP/API.
+HTTP 401 означає відхилений токен, cURL 6 — DNS, 7 — з’єднання, 28 — таймаут,
+35/60 — TLS/CA, HTTP 409 — конфлікт webhook/опитування, 429 — обмеження частоти.
+Вміст відповіді Telegram, повний URL Bot API й токен не виводяться.
+
 `register` звіряє @username через `getMe`, встановлює webhook із секретом,
 `max_connections=1` та меню команд. Токен не виводиться. Наявний webhook
 буде змінений; використовуйте окремого бота Emplivo, а не чужого робочого бота.
@@ -204,6 +218,7 @@ python tools/configure_telegram.py --group-url 'https://t.me/REAL_GROUP_USERNAME
 
 ```bash
 php tools/test_telegram.php
+php tools/test_telegram_transport.php
 php tools/test_telegram_setup.php
 python tools/test_telegram_secret_io.py
 python tools/test_telegram_webhook.py
