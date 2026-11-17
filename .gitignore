@@ -1,4 +1,6 @@
 /emplivo-private/
+/telegram-state/
+/config/telegram.php
 /test-results/
 /releases/
 __pycache__/
