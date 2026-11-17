@@ -3,15 +3,22 @@ declare(strict_types=1);
 
 // Run on the PHP server over SSH. No token in CLI arguments, URLs or console output.
 if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
+ini_set('display_errors', '0');
 require_once dirname(__DIR__) . '/api/lib/TelegramBot.php';
+require_once __DIR__ . '/TelegramPrivateConfig.php';
 $command = $argv[1] ?? 'help';
-if (!in_array($command, ['admin-id', 'check', 'register', 'status', 'disable', 'cleanup'], true)) {
-    echo "Usage: php tools/telegram_admin.php admin-id|check|register|status|disable|cleanup [absolute-private-config-path]\n";
+if (!in_array($command, ['prepare', 'admin-id', 'check', 'register', 'status', 'disable', 'cleanup'], true)) {
+    echo "Usage: php tools/telegram_admin.php prepare|admin-id|check|register|status|disable|cleanup [absolute-private-config-path]\n";
     exit($command === 'help' ? 0 : 1);
 }
 try {
     $path = $argv[2] ?? dirname(__DIR__, 2) . '/emplivo-private/telegram.php';
     if (!is_readable($path)) { throw new RuntimeException('Missing config'); }
+    if ($command === 'prepare') {
+        \Emplivo\TelegramPrivateConfig::prepare($path, dirname(__DIR__));
+        echo "Технічні налаштування збережені приватно. Токен не змінено.\nНаступна команда: php tools/telegram_admin.php admin-id\n";
+        exit;
+    }
     $config = require $path;
     if ($command === 'admin-id') {
         // Bootstrap only: no sendMessage is called with this temporary value.
@@ -38,7 +45,9 @@ try {
             $m = $update['message'] ?? [];
             if (($m['text'] ?? '') === '/id ' . $challenge && ($m['chat']['type'] ?? '') === 'private'
                 && ($m['from']['id'] ?? 0) === ($m['chat']['id'] ?? -1) && ($m['chat']['id'] ?? 0) > 0) {
-                echo 'Your private admin_chat_id: ' . $m['chat']['id'] . "\nCopy it into the private config before register.\n";
+                $config['admin_chat_id'] = (string) $m['chat']['id'];
+                \Emplivo\TelegramPrivateConfig::save($path, $config, dirname(__DIR__));
+                echo 'ID особистого чату менеджера збережено: ' . $m['chat']['id'] . "\nНаступні команди: check, register, status.\n";
                 $matched = true;
             }
         }

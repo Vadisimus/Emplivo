@@ -44,7 +44,14 @@ HTTPS endpoint на PHP-хостингу:
 
 ## 3. Приватні налаштування на хостингу
 
-Завантажте нові `api/`, `tools/telegram_admin.php` і шаблон із `config/`.
+Малий пакет серверних файлів: [downloads/emplivo-telegram-setup.zip](downloads/emplivo-telegram-setup.zip).
+Завантажте його в `www` вашого домену й розпакуйте саме там: після розпакування
+має бути `www/api/telegram-webhook.php`. Архів не містить приватного `telegram.php`
+і не замінює вже збережений токен. Видаліть завантажений ZIP із хостингу після
+розпакування. Його можна повторно зібрати командою `python tools/package_telegram.py`.
+
+Завантажте нові `api/`, `tools/telegram_admin.php`, `tools/TelegramPrivateConfig.php`,
+публічний `telegram-config.js` і шаблон із `config/`.
 У файловому менеджері хостингу створіть **поза публічною папкою `www`**:
 
 ```text
@@ -73,6 +80,12 @@ PHP має працювати від власника цих каталогів.
 Генеруйте два секрети на сервері засобами PHP. Не вводьте токен у команди
 curl або аргументи команд, де він потрапить в історію. Шаблон не містить секретів.
 
+Якщо ви вже зберегли лише токен, команда `prepare` нижче створить відсутні
+`webhook_secret` та `state_key`, додасть публічні адреси з `telegram-config.js`
+і шлях до приватного каталогу стану. Вона не показує та не змінює токен,
+не перезаписує заповнені поля й не реєструє webhook. Повторний запуск
+зберігає наявні ключі. Заповнений файл зберігається з правами 600.
+
 ## 4. Запуск у терміналі PHP-хостингу
 
 Перейдіть у фактичну публічну папку `www`. Шляхи в командах відносні до неї.
@@ -81,12 +94,14 @@ curl або аргументи команд, де він потрапить в �
 php -v
 php --ri curl
 php --ri sodium
+php tools/telegram_admin.php prepare
 php tools/telegram_admin.php admin-id
 ```
 
 Остання команда працює **до реєстрації webhook**: покаже одноразову команду
 `/id …`. Надішліть її боту зі свого особистого Telegram, поверніться в
-термінал і натисніть Enter. Скопіюйте виданий позитивний ID у `admin_chat_id`.
+термінал і натисніть Enter. Команда збереже позитивний ID у `admin_chat_id`
+автоматично, не виводячи токен.
 Якщо повідомлення не знайдено, повторіть перед публічним оголошенням бота.
 Від’ємний ID групи конфігурація відхиляє.
 
@@ -164,6 +179,7 @@ python tools/configure_telegram.py --group-url 'https://t.me/REAL_GROUP_USERNAME
 
 ```bash
 php tools/test_telegram.php
+php tools/test_telegram_setup.php
 python tools/test_telegram_webhook.py
 python tools/test_telegram_config.py
 node tools/verify_telegram.cjs

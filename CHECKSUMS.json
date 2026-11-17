@@ -1,5 +1,5 @@
 {
-  "release": "2026-11-17 Wellness — Telegram group configured; application bot awaits PHP activation",
+  "release": "2026-11-17 Wellness — Telegram group and private server setup helpers",
   "files": {
     "styles.css": "acea8386e0b9a6ea73f29bc42d6e9a7a2680f0e89025665e1eee7d0ef19a3c26",
     "jobs-data.js": "4453b148f7a92b960a7059f43d2c87118d1db45964520752f996084c7ffe87ef",
@@ -90,6 +90,9 @@
     "telegram.js": "a295d3aa32e9eef17814194d942b2e8498fbd440a3b2f416b48b2baadcad3e2f",
     "telegram-config.js": "96de62e2160a883bcc4011cc583f1079fcd1f614c00b65f3a3c351db1798a72e",
     "api/telegram-webhook.php": "db854d081420d51c68493cdbf9af9ebc16ececd0f548638e24cd4af665d44e21",
-    "api/lib/TelegramBot.php": "3831a4dd2e91f8dfdf01b1bcf6bd09ab3b652377ba974258401cc98b6364bd0e"
+    "api/lib/TelegramBot.php": "3831a4dd2e91f8dfdf01b1bcf6bd09ab3b652377ba974258401cc98b6364bd0e",
+    "tools/telegram_admin.php": "81aab453ea8f6b03195619813f2c51ac2f6d8c6004674ea43af3d2c07eff5a45",
+    "tools/TelegramPrivateConfig.php": "d6134c6a897d9a9ca9bfc84758efcf6bff6215eeffad24612457fcdb1a36a36d",
+    "downloads/emplivo-telegram-setup.zip": "f5672caf5a79e6cfad564204f50544ea7f915a53717b1c72088e813cd65e9ada"
   }
 }
