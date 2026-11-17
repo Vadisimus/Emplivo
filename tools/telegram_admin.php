@@ -7,19 +7,27 @@ ini_set('display_errors', '0');
 require_once dirname(__DIR__) . '/api/lib/TelegramBot.php';
 require_once __DIR__ . '/TelegramPrivateConfig.php';
 $command = $argv[1] ?? 'help';
-if (!in_array($command, ['prepare', 'admin-id', 'check', 'register', 'status', 'disable', 'cleanup'], true)) {
-    echo "Usage: php tools/telegram_admin.php prepare|admin-id|check|register|status|disable|cleanup [absolute-private-config-path]\n";
+if (!in_array($command, ['init', 'prepare', 'admin-id', 'check', 'register', 'status', 'disable', 'cleanup'], true)) {
+    echo "Usage: php tools/telegram_admin.php init|prepare|admin-id|check|register|status|disable|cleanup [absolute-private-config-path]\n";
     exit($command === 'help' ? 0 : 1);
 }
 try {
     $path = $argv[2] ?? dirname(__DIR__, 2) . '/emplivo-private/telegram.php';
+    if ($command === 'init') {
+        $token = trim((string) getenv('EMPLIVO_TELEGRAM_TOKEN'));
+        putenv('EMPLIVO_TELEGRAM_TOKEN');
+        \Emplivo\TelegramPrivateConfig::initialize($path, dirname(__DIR__), $token);
+        unset($token);
+        echo "Токен збережено приватно. Налаштування підготовлено.\nНаступна команда: php tools/telegram_admin.php admin-id\n";
+        exit;
+    }
     if (!is_readable($path)) { throw new RuntimeException('Missing config'); }
     if ($command === 'prepare') {
         \Emplivo\TelegramPrivateConfig::prepare($path, dirname(__DIR__));
         echo "Технічні налаштування збережені приватно. Токен не змінено.\nНаступна команда: php tools/telegram_admin.php admin-id\n";
         exit;
     }
-    $config = require $path;
+    $config = \Emplivo\TelegramConfig::load($path);
     if ($command === 'admin-id') {
         // Bootstrap only: no sendMessage is called with this temporary value.
         $config['admin_chat_id'] = '1';
@@ -81,6 +89,9 @@ try {
         $bot->call('deleteWebhook', ['drop_pending_updates' => false]);
         echo "Webhook disabled; pending updates preserved.\n";
     }
+} catch (\Emplivo\TelegramConfigException $error) {
+    fwrite(STDERR, "Неправильний формат приватного telegram.php. Файл має починатися з <?php і повертати масив. Вміст приховано. Скористайтеся: bash tools/telegram_init.sh\n");
+    exit(1);
 } catch (Throwable $error) {
     // Details intentionally exclude API responses and secrets.
     fwrite(STDERR, "Telegram setup failed. Check private config, PHP cURL/sodium, permissions, network and command prerequisites in TELEGRAM_UA.md.\n");

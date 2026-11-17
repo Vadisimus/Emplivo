@@ -5,8 +5,8 @@ from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
 
 ROOT=Path(__file__).resolve().parents[1]
 FILES=[
-    'api/telegram-webhook.php', 'api/lib/TelegramBot.php',
-    'tools/telegram_admin.php', 'tools/TelegramPrivateConfig.php',
+    'api/telegram-webhook.php', 'api/lib/TelegramBot.php', 'api/lib/TelegramConfig.php',
+    'tools/telegram_admin.php', 'tools/TelegramPrivateConfig.php', 'tools/telegram_init.sh',
     'telegram-config.js', 'config/telegram.example.php', 'TELEGRAM_UA.md',
 ]
 output=ROOT/'downloads/emplivo-telegram-setup.zip'

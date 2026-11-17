@@ -13,6 +13,7 @@ import time
 
 ROOT = Path(__file__).resolve().parents[1]
 PHP = os.environ.get('EMPLIVO_PHP', 'php')
+SECRET_MARKER = b'TEST_PRIVATE_SECRET_DO_NOT_PRINT'
 with TemporaryDirectory(prefix='emplivo-webhook-') as tmp:
     root = Path(tmp)
     public = root/'www'
@@ -27,8 +28,10 @@ with TemporaryDirectory(prefix='emplivo-webhook-') as tmp:
         req = Request(f'http://127.0.0.1:{port}/api/telegram-webhook.php', method=method, data=None if method=='GET' else data, headers=headers or {'Content-Type':'application/json'})
         try:
             with urlopen(req, timeout=3) as response:
+                assert SECRET_MARKER not in response.read(), 'Private configuration leaked in HTTP response'
                 return response.status
         except HTTPError as e:
+            assert SECRET_MARKER not in e.read(), 'Private configuration leaked in HTTP error'
             return e.code
     try:
         for attempt in range(40):
@@ -40,6 +43,8 @@ with TemporaryDirectory(prefix='emplivo-webhook-') as tmp:
         else:
             raise AssertionError('PHP server unavailable')
         assert request() == 503, 'Missing configuration must fail closed'
+        (private/'telegram.php').write_text("'bot_token' => '"+SECRET_MARKER.decode()+"',")
+        assert request() == 503, 'Raw configuration must fail without disclosing its contents'
         secret = 'test_secret_'*4
         config = "<?php return ['bot_token'=>'123456789:"+'x'*35+"','webhook_secret'=>'"+secret+"','state_key'=>base64_encode(str_repeat('s',32)), 'admin_chat_id'=>'999888777','group_url'=>'https://t.me/EmplivoGroupExample','site_url'=>'https://www.emplivo.com.ua','state_dir'=>"+repr(str(root/'state'))+"];"
         (private/'telegram.php').write_text(config)

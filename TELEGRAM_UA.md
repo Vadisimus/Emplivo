@@ -1,7 +1,7 @@
 # Telegram для Emplivo
 
 Підготовлено інтеграцію **публічна група вакансій + приватний бот анкет**.
-Адресу-запрошення групи та username `Emplivo_bot` внесено в публічну конфігурацію.
+Адресу-запрошення групи та username `Emplivobot` внесено в публічну конфігурацію.
 Посилання на групу ввімкнене. Приймання анкет ботом вимкнене (`botEnabled: false`)
 до налаштування приватного сервера; реєстрація webhook не виконувалась.
 Бот не публікує анкети в групі й не розміщує вакансії автоматично.
@@ -51,6 +51,7 @@ HTTPS endpoint на PHP-хостингу:
 розпакування. Його можна повторно зібрати командою `python tools/package_telegram.py`.
 
 Завантажте нові `api/`, `tools/telegram_admin.php`, `tools/TelegramPrivateConfig.php`,
+`tools/telegram_init.sh`,
 публічний `telegram-config.js` і шаблон із `config/`.
 У файловому менеджері хостингу створіть **поза публічною папкою `www`**:
 
@@ -64,7 +65,31 @@ HTTPS endpoint на PHP-хостингу:
 ```
 
 Права: `emplivo-private` і `telegram-state` — 700, `telegram.php` — 600.
-PHP має працювати від власника цих каталогів. У `telegram.php` заповніть:
+PHP має працювати від власника цих каталогів.
+
+**Рекомендований спосіб збереження токена:** з папки `www` запустіть
+`bash tools/telegram_init.sh`. Вставте новий токен лише після появи запиту
+в терміналі й натисніть Enter. Символи не відображаються. Токен не входить
+до тексту команди або історії shell; приватний PHP-файл створюється автоматично.
+Скрипт може замінити неправильно оформлений файл. У правильному файлі він
+зберігає наявні ключі шифрування та ID менеджера при зміні токена.
+
+Для ручного налаштування `telegram.php` має бути **повним PHP-файлом**:
+
+```php
+<?php
+return [
+    'bot_token' => 'ВСТАВТЕ_НОВИЙ_ТОКЕН_ЛИШЕ_НА_СЕРВЕРІ',
+    'bot_username' => 'Emplivobot',
+];
+```
+
+Окремі рядки `'bot_token' => ...` без `<?php` та `return [...]` не є PHP-конфігурацією.
+Завантажувач відхиляє неправильний файл без показу його вмісту. Якщо токен
+вже відобразився в чаті чи журналі, перевипустіть його через @BotFather `/revoke`
+і збережіть новий через прихований запит. Не вставляйте токен у повідомлення.
+
+Повний перелік налаштувань:
 
 | Поле | Значення |
 |---|---|
@@ -94,7 +119,7 @@ curl або аргументи команд, де він потрапить в �
 php -v
 php --ri curl
 php --ri sodium
-php tools/telegram_admin.php prepare
+bash tools/telegram_init.sh
 php tools/telegram_admin.php admin-id
 ```
 
@@ -139,7 +164,7 @@ php /АБСОЛЮТНИЙ/ШЛЯХ/www/tools/telegram_admin.php cleanup
 Лише після успішного тесту підключіть публічні адреси з кореня репозиторію:
 
 ```bash
-python tools/configure_telegram.py --group-url 'https://t.me/REAL_GROUP_USERNAME' --bot-username 'Emplivo_bot' --enable-bot
+python tools/configure_telegram.py --group-url 'https://t.me/REAL_GROUP_USERNAME' --bot-username 'Emplivobot' --enable-bot
 ```
 
 Замініть адресу групи реальною адресою (підтримується й `https://t.me/+…`).
@@ -180,6 +205,7 @@ python tools/configure_telegram.py --group-url 'https://t.me/REAL_GROUP_USERNAME
 ```bash
 php tools/test_telegram.php
 php tools/test_telegram_setup.php
+python tools/test_telegram_secret_io.py
 python tools/test_telegram_webhook.py
 python tools/test_telegram_config.py
 node tools/verify_telegram.cjs

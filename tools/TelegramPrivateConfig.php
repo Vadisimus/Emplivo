@@ -3,9 +3,29 @@ declare(strict_types=1);
 
 namespace Emplivo;
 
+require_once dirname(__DIR__) . '/api/lib/TelegramConfig.php';
+
 /** CLI-only setup helpers. They never print or contact Telegram with a token. */
 final class TelegramPrivateConfig
 {
+    public static function initialize(string $path, string $webroot, string $token): array
+    {
+        if (!preg_match('/^[0-9]{6,20}:[A-Za-z0-9_-]{30,80}$/D', $token)) {
+            throw new \RuntimeException('Enter the new token in the hidden terminal prompt');
+        }
+        $config = [];
+        if (is_file($path)) {
+            try { $config = TelegramConfig::load($path); }
+            catch (TelegramConfigException $error) { /* Replace a malformed token-only file safely. */ }
+        }
+        if (!is_dir(dirname($path)) && !mkdir(dirname($path), 0700, true)) {
+            throw new \RuntimeException('Cannot create private directory');
+        }
+        $config['bot_token'] = $token;
+        self::save($path, $config, $webroot);
+        return self::prepare($path, $webroot);
+    }
+
     public static function save(string $path, array $config, string $webroot): void
     {
         $parent = realpath(dirname($path));
@@ -29,7 +49,7 @@ final class TelegramPrivateConfig
         if (!extension_loaded('sodium') || !is_readable($path)) {
             throw new \RuntimeException('Private configuration and Sodium required');
         }
-        $config = require $path;
+        $config = TelegramConfig::load($path);
         if (!is_array($config) || !preg_match('/^[0-9]{6,20}:[A-Za-z0-9_-]{30,80}$/D', (string) ($config['bot_token'] ?? ''))) {
             throw new \RuntimeException('Set the bot token in private configuration first');
         }

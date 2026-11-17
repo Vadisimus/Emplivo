@@ -41,6 +41,10 @@ try {
     $prepared['admin_chat_id'] = '987654321';
     \Emplivo\TelegramPrivateConfig::save($path, $prepared, $web);
     setupCheck((require $path)['admin_chat_id'] === '987654321', 'Manager ID persisted privately');
+    $replacement = '987654321:' . str_repeat('replacement_only_', 3);
+    $initialized = \Emplivo\TelegramPrivateConfig::initialize($path, $web, $replacement);
+    setupCheck($initialized['bot_token'] === $replacement, 'Explicit initialization replaces the token');
+    setupCheck($initialized['state_key'] === $prepared['state_key'] && $initialized['admin_chat_id'] === '987654321', 'Token rotation preserves encryption key and recipient');
     try {
         \Emplivo\TelegramPrivateConfig::save($web . '/telegram.php', $prepared, $web);
         throw new LogicException('Public secret file accepted');

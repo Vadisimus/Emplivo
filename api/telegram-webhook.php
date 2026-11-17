@@ -20,7 +20,8 @@ if ((int) ($_SERVER['CONTENT_LENGTH'] ?? 0) > 65536) { telegramResponse(413); }
 try {
     $configPath = dirname(__DIR__, 2) . '/emplivo-private/telegram.php';
     if (!is_readable($configPath)) { telegramResponse(503); }
-    $config = require $configPath;
+    require_once __DIR__ . '/lib/TelegramConfig.php';
+    $config = \Emplivo\TelegramConfig::load($configPath);
     $secret = (string) ($config['webhook_secret'] ?? '');
     if (strlen($secret) < 32) { telegramResponse(503); }
     $provided = (string) ($_SERVER['HTTP_X_TELEGRAM_BOT_API_SECRET_TOKEN'] ?? '');
