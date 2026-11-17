@@ -28,6 +28,8 @@ try {
     try { new \Emplivo\TelegramBot($bad, $transport); throw new LogicException('Negative group ID accepted'); }
     catch (RuntimeException $expected) { check(!($expected instanceof LogicException), 'Group destination rejected'); }
     $bot = new \Emplivo\TelegramBot($config, $transport);
+    $inviteConfig = $config; $inviteConfig['group_url'] = 'https://t.me/+AbCdeFGhIjKlmN01';
+    new \Emplivo\TelegramBot($inviteConfig, $transport);
     $bot->handle($message('/apply', 'supergroup'));
     check($calls === [], 'No replies or application data in groups');
     $bot->handle($message('/apply'));

@@ -17,7 +17,7 @@ final class TelegramBot
             || !preg_match('/^[1-9][0-9]{0,15}$/D', (string) ($config['admin_chat_id'] ?? ''))
             || !preg_match('/^[0-9]{6,20}:[A-Za-z0-9_-]{30,80}$/D', (string) ($config['bot_token'] ?? ''))
             || !preg_match('/^[A-Za-z0-9_-]{32,256}$/D', (string) ($config['webhook_secret'] ?? ''))
-            || !preg_match('~^https://t\.me/[A-Za-z][A-Za-z0-9_]{4,31}$~D', (string) ($config['group_url'] ?? ''))
+            || !preg_match('~^https://t\.me/(?:[A-Za-z][A-Za-z0-9_]{4,31}|\+[A-Za-z0-9_-]{16,64})$~D', (string) ($config['group_url'] ?? ''))
             || !in_array($config['site_url'] ?? '', ['https://www.emplivo.com.ua', 'https://emplivo.com.ua', 'https://vadisimus.github.io/Emplivo'], true)) {
             throw new \RuntimeException('Telegram configuration incomplete');
         }

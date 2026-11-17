@@ -1,5 +1,6 @@
-// Public addresses only. Never put a BotFather token in this file.
+// Public addresses only. Never put a BotFather token here.
 window.EMPLIVO_TELEGRAM = Object.freeze({
-  groupUrl: '',
-  botUsername: ''
+  "groupUrl": "https://t.me/+CAmQRgfE3mUzZjMy",
+  "botUsername": "Emplivo_bot",
+  "botEnabled": false
 });
