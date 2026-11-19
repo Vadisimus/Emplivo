@@ -22,3 +22,7 @@ dialog{width:min(920px,calc(100% - 40px));max-height:90dvh;border:1px solid #e4e
 .telegram-footer-links,.telegram-static-links{display:flex;flex-wrap:wrap;gap:12px 24px;padding:20px 0;font-size:14px;line-height:1.5}.telegram-footer-links a,.telegram-static-links a{color:inherit;text-decoration:underline;text-underline-offset:3px}
 
 .telegram-static-links{max-width:1200px;margin-inline:auto;padding-inline:24px}
+
+.language-options{display:flex;flex-shrink:0;align-items:center;gap:2px}
+.language-options .language{display:inline-flex;padding:6px 4px;text-decoration:none}
+.language-options [aria-current=page]{font-weight:800;text-decoration:underline;text-underline-offset:3px}

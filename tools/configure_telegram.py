@@ -40,13 +40,19 @@ def write_links(group,bot,enable_bot=False):
     (ROOT/'telegram-config.js').write_text(public_config)
     adapter=ROOT/'telegram.js'
     version=hashlib.sha256(public_config.encode()+(adapter.read_bytes() if adapter.exists() else b'')).hexdigest()[:12]
+    labels = {
+        'uk': ('Група вакансій у Telegram', 'Анкета через Telegram-бота'),
+        'en': ('Telegram job group', 'Apply with the Telegram bot'),
+        'ru': ('Группа вакансий в Telegram', 'Анкета через Telegram-бота'),
+    }
     # Keep useful links in pre-rendered HTML, including without JavaScript.
     for page in ROOT.rglob('index.html'):
         if '.git' in page.parts:continue
-        text=page.read_text();en=page.relative_to(ROOT).parts[0]=='en'
-        items=[(group,'Telegram job group' if en else 'Група вакансій у Telegram')]
+        text=page.read_text()
+        group_label, bot_label = labels.get(page.relative_to(ROOT).parts[0], labels['uk'])
+        items=[(group,group_label)]
         if enable_bot:
-            items.append(('https://t.me/'+bot+'?start=apply','Apply with the Telegram bot' if en else 'Анкета через Telegram-бота'))
+            items.append(('https://t.me/'+bot+'?start=apply',bot_label))
         block='<nav class="telegram-static-links" aria-label="Telegram">'+''.join('<a href="'+escape(url,quote=True)+'" target="_blank" rel="noopener noreferrer">'+label+'</a>' for url,label in items)+'</nav>'
         text=re.sub(r'<nav class="telegram-static-links"[^>]*>.*?</nav>','',text,flags=re.S)
         text=text.replace('</footer>',block+'</footer>',1)

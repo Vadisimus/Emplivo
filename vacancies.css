@@ -1,0 +1,12 @@
+.vacancy-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+#vacancy-brief,#vacancy-brief-result{max-width:56rem;margin:1.5rem 0;background:#f2efe8;border:1px solid #dddcd3;border-radius:1rem;padding:clamp(1rem,4vw,2rem)}
+#vacancy-brief[hidden],#vacancy-brief-result[hidden],[data-vacancy-until][hidden],[data-vacancy-expired][hidden]{display:none}
+#vacancy-brief label,#vacancy-brief-result label{display:grid;gap:.35rem;font-weight:600;min-width:0}
+#vacancy-brief :is(input:not([type=checkbox]),select,textarea),#vacancy-brief-result textarea{width:100%;max-width:100%;min-width:0;padding:.65rem;font:inherit;color:inherit;background:#fff;border:1px solid #aeb5aa;border-radius:.5rem}
+#vacancy-brief small{font-weight:400}
+#vacancy-brief .vacancy-approval{display:flex;align-items:baseline;gap:.6rem;margin:1rem 0}
+#vacancy-brief-result label{margin-top:1rem}
+.vacancy-facts{margin:1rem 0}
+.vacancy-facts dt{font-weight:700}
+.vacancy-facts dd{margin:0 0 .75rem}
+@media(max-width:640px){.vacancy-form-grid{grid-template-columns:1fr}}

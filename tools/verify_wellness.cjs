@@ -1,7 +1,7 @@
 const {chromium}=require('playwright');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
-const base='http://127.0.0.1:8085';
+const base=process.env.EMPLIVO_TEST_URL || 'http://127.0.0.1:8085';
 (async()=>{
  const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox'],headless:true});
  const errors=[],external=[];let posts=0;const ids=[];
@@ -16,10 +16,11 @@ const base='http://127.0.0.1:8085';
    await route.fulfill({status:posts===1?503:200,contentType:'application/json',body:JSON.stringify(posts===1?{message:'Simulated outage'}:{ok:true,id})});
   });
   await p.goto(base+'/');
-  assert.match(await p.locator('h1').textContent(),/Таланти/);
+  assert.match(await p.locator('h1').textContent(),/Робота й підбір персоналу/);
   assert.equal(await p.locator('#header-navigation a').first().getAttribute('href'),'/jobs/');
   await p.locator('#hero-query').fill('тренер');await p.locator('#hero-search button').click();
-  await p.waitForURL('**/jobs/?**');assert.equal(await p.locator('#catalog-list .job-card').count(),2);
+  await p.waitForURL('**/jobs/?**');assert.equal(await p.locator('#catalog-list .job-card').count(),0);
+  await p.goto(base+'/jobs/?demo=1');assert.equal(await p.locator('#catalog-list .job-card').count(),6);
   await p.locator('[data-action=reset-filters]').first().click();
   await p.locator('[data-filter=sector][value=spa]').check();assert.equal(await p.locator('#catalog-list .job-card').count(),2);
   await p.locator('#catalog-list .save-button').first().click();await p.reload();assert.equal(await p.locator('#catalog-list .save-button').first().getAttribute('aria-pressed'),'true');
@@ -40,8 +41,8 @@ const base='http://127.0.0.1:8085';
   await p.locator('[name=name]').fill('Test employer');await p.locator('[name=email]').fill('employer@example.test');await p.locator('#brief-form [type=checkbox]').check();await p.locator('#brief-form [type=submit]').click();
   assert.match(await p.locator('#dialog').textContent(),/не надсилає лист автоматично/);assert.equal(await p.locator('#dialog a[href^="mailto:"]').count(),1);await p.keyboard.press('Escape');
   for(const width of [360,390,768,1440]){await p.setViewportSize({width,height:900});for(const route of ['/','/jobs/','/employers/','/about/','/en/','/jobs/spa-therapist/']){await p.goto(base+route);assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),route+' at '+width);}}
-  await p.goto(base+'/en/');assert.equal(await p.locator('html').getAttribute('lang'),'en');assert.match(await p.locator('h1').textContent(),/People/);assert.equal(await p.locator('#header-navigation a').first().getAttribute('href'),'/en/jobs/');
-  const nojs=await browser.newContext({javaScriptEnabled:false});const stat=await nojs.newPage();await stat.goto(base+'/jobs/');assert.equal(await stat.locator('#catalog-list .job-card').count(),6);assert.equal(await stat.locator('link[rel=canonical]').getAttribute('href'),'https://www.emplivo.com.ua/jobs/');await nojs.close();
+  await p.goto(base+'/en/');assert.equal(await p.locator('html').getAttribute('lang'),'en');assert.match(await p.locator('h1').textContent(),/Jobs and recruitment/);assert.equal(await p.locator('#header-navigation a').first().getAttribute('href'),'/en/jobs/');
+  const nojs=await browser.newContext({javaScriptEnabled:false});const stat=await nojs.newPage();await stat.goto(base+'/jobs/');assert.equal(await stat.locator('#catalog-list a[href*="vacancies/ever-tech-"]').count(),3);assert.equal(await stat.locator('link[rel=canonical]').getAttribute('href'),'https://www.emplivo.com.ua/jobs/');await nojs.close();
   await p.setViewportSize({width:1440,height:1000});await p.goto(base+'/');await p.evaluate(()=>document.fonts.ready);await p.screenshot({path:'/workspace/reports/wellness-release-desktop.png',animations:'disabled'});
   await p.setViewportSize({width:390,height:844});await p.goto(base+'/jobs/');await p.screenshot({path:'/workspace/reports/wellness-release-mobile.png',animations:'disabled'});
   assert.deepEqual(errors,[]);assert.deepEqual(external,[]);

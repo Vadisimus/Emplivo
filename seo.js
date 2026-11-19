@@ -1,6 +1,7 @@
 (() => {
   'use strict';
   const en = document.documentElement.lang === 'en';
+  const ru = document.documentElement.lang === 'ru';
   const allowedEvents = new Set(['view_job', 'save_job', 'unsave_job', 'begin_application', 'application_submitted', 'email_request_prepared']);
   // Opt-in adapter only. No analytics vendor, storage or personal data by default.
   window.emplivoTrack = (name, properties = {}) => {
@@ -33,9 +34,9 @@
   const topics = ['employer', 'temporary', 'permanent', 'opportunities', 'consultation'];
   if (topics.includes(params.get('type'))) form.elements.topic.value = params.get('type');
   const roles = {
-    'spa-therapist': en ? 'Spa therapist' : 'SPA-терапевт',
-    'personal-trainer': en ? 'Personal trainer' : 'Персональний тренер',
-    'wellness-manager': en ? 'Wellness manager' : 'Wellness-менеджер'
+    'spa-therapist': ru ? 'Спа-терапевт' : en ? 'Spa therapist' : 'SPA-терапевт',
+    'personal-trainer': ru ? 'Персональный тренер' : en ? 'Personal trainer' : 'Персональний тренер',
+    'wellness-manager': ru ? 'Велнес-менеджер' : en ? 'Wellness manager' : 'Wellness-менеджер'
   };
   if (roles[params.get('role')]) form.elements.role.value = roles[params.get('role')];
   form.addEventListener('submit', event => {
@@ -49,7 +50,8 @@
     const openEmail = document.getElementById('email-open');
     openEmail.href = mailto;
     openEmail.hidden = false;
-    document.getElementById('request-status').textContent = en
+    document.getElementById('request-status').textContent = ru
+      ? 'Отправьте сообщение в почтовой программе или скопируйте текст ниже. Время консультации согласует команда.' : en
       ? 'Send the message from your email app, or copy the text below. Your request has not been sent by this website. A time is only booked after team confirmation.'
       : 'Надішліть повідомлення у поштовій програмі або скопіюйте текст нижче. Сайт не надіслав запит. Час розмови буде погоджено лише після відповіді команди.';
     window.emplivoTrack('email_request_prepared', { request_type: form.elements.topic.value });
