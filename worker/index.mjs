@@ -114,13 +114,15 @@ async function challengeOK(token, origin, kind, env) {
 }
 
 async function sendToTelegram(env, data) {
-  const { id, kind, name, email, phone, company, role, description, vacancy, file, privacy } = data;
+  const { id, kind, name, email, phone, company, role, service, description, vacancy, file, privacy } = data;
   const lines = [kind === 'apply' ? 'Анкета кандидата' : 'Бриф роботодавця', 'ID ' + id, name, email];
   if (kind === 'apply') {
     if (phone) lines.push('Телефон ' + phone);
     lines.push(vacancy ? 'Вакансія ' + vacancy : 'Загальна анкета');
   } else {
-    lines.push('Компанія ' + company, 'Посада ' + role, description);
+    lines.push('Компанія ' + company, 'Посада ' + role);
+    if (service) lines.push('Послуга ' + service);
+    lines.push(description);
   }
   lines.push('Приватність ' + privacy);
   const body = new FormData();
@@ -193,6 +195,10 @@ export default {
         data.company = field(form, 'company', 140);
         data.role = field(form, 'role', 140);
         data.description = field(form, 'description', 2000);
+        data.service = field(form, 'service', 40, true);
+        if (data.service && !['recruitment', 'executive-search', 'volume-hiring', 'contract'].includes(data.service)) {
+          throw new InputError('invalid_fields');
+        }
       }
       const token = field(form, 'cf-turnstile-response', 2048);
       if (!(await challengeOK(token, origin, kind, env))) return reply(403, { error: 'challenge' });

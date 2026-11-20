@@ -56,6 +56,15 @@ export async function mountIntake(form) {
   const fileInput = form.elements.namedItem('cv');
   const challengeTarget = form.querySelector('[data-challenge]');
   const kind = form.dataset.intake;
+  const params = new URLSearchParams(location.search);
+  if (kind === 'apply') {
+    const vacancy = params.get('vacancy');
+    if (vacancy && /^[a-z0-9-]{1,80}$/.test(vacancy)) form.elements.vacancyId.value = vacancy;
+  } else {
+    const service = params.get('service');
+    const input = form.elements.service;
+    if (service && [...input.options].some(option => option.value === service)) input.value = service;
+  }
   const siteKey = intakeConfig.siteKey;
   const agencyHost = ['emplivo.com.ua', 'www.emplivo.com.ua'].includes(location.hostname);
   const usePhp = agencyHost && kind === 'apply' && !intakeConfig.workerOrigin && !form.elements.vacancyId.value;
@@ -90,7 +99,6 @@ export async function mountIntake(form) {
       return;
     }
   }
-  form.removeAttribute('inert');
   submit.disabled = false;
 
   function validate(control) {
