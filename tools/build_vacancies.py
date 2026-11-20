@@ -182,7 +182,7 @@ def page_shell(lang, route, title, description, body, *, languages=LOCALES, sche
 <meta name="robots" content="{"noindex,follow" if noindex else "index,follow"}">
 <link rel="icon" href="{pref}assets/mark.svg">
 <link rel="stylesheet" href="{pref}styles.css"><link rel="stylesheet" href="{pref}modern.css">
-<link rel="stylesheet" href="{pref}seo.css?v=20261119ru"><link rel="stylesheet" href="{pref}vacancies.css">
+<link rel="stylesheet" href="{pref}seo.css?v=20261119palette"><link rel="stylesheet" href="{pref}vacancies.css?v=20261119palette">
 {structured}<script defer src="{pref}vacancy-tools.js"></script>
 </head><body class="seo-page">
 <a class="skip" href="#main">{t("До основного вмісту","Skip to content")}</a>

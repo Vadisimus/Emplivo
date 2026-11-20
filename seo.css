@@ -16,3 +16,40 @@
 .seo-language-options{display:flex;flex-shrink:0;align-items:center;gap:5px}
 .seo-language-options .seo-language{margin:0;padding:5px;text-decoration:none}
 .seo-language-options [aria-current=page]{font-weight:800;text-decoration:underline;text-underline-offset:3px}
+
+/* Responsive typography for editorial pages and the vacancy template. */
+.seo-page {font-size:16px;line-height:1.65}
+.seo-page .shell {min-width:0}
+.seo-page :is(h1,h2,h3) {font-family:WellnessInter,Inter,Arial,sans-serif;font-weight:670;overflow-wrap:anywhere}
+.seo-nav {padding-block:14px;gap:21px;font-size:14px}
+.seo-page .brand-emblem {border-radius:10px}
+.seo-nav .brand {font-size:20px;letter-spacing:-.035em;font-weight:750}
+.seo-content {padding-block:30px 65px}
+.seo-hero {padding:28px 0 23px}
+.seo-hero h1 {font-size:clamp(2.1rem,4.35vw,4rem);line-height:1.08;letter-spacing:-.047em;margin:10px 0 17px;max-width:24ch}
+.seo-page .eyebrow {font-size:12px}
+.seo-lead,.seo-hero>p,.seo-section p,.seo-section li,.seo-aside p {max-width:65ch;color:#64675e;font-size:16px;line-height:1.65}
+.seo-hero>.eyebrow {font-size:12px}
+.seo-hero>p {overflow-wrap:anywhere}
+.seo-section {border-color:#dddcd3}
+.seo-section {padding:22px 0}
+.seo-section h2,.seo-aside h2 {font-size:clamp(1.2rem,2.15vw,1.7rem);letter-spacing:-.025em;line-height:1.23}
+.seo-columns {gap:29px}
+.seo-aside {border-radius:17px}
+.seo-card {padding:13px 15px;border-radius:12px;font-size:15px}
+.seo-page .button.primary,.seo-page .button-primary {border-radius:12px;min-height:46px;font-size:14px;font-weight:650;white-space:normal;text-align:center}
+.seo-page :is(a,button,input,textarea,select):focus-visible {outline:3px solid #405446;outline-offset:3px}
+.seo-footer {font-size:14px}
+.seo-footer a,.seo-aside a:not(.button):not(.seo-card) {overflow-wrap:anywhere}
+.seo-language-options {padding:3px;background:#efece6;border-radius:9px;gap:2px;margin-left:auto}
+.seo-language-options .seo-language {display:inline-grid;place-items:center;min-width:29px;min-height:31px;font-size:12px;font-weight:650;padding:3px;border-radius:7px}
+.seo-language-options [aria-current=page] {background:#fffefa;color:#405446;text-decoration:none}
+.seo-page :is(input:not([type=checkbox]),select,textarea) {max-width:100%;font-size:16px}
+@media (max-width:700px) {
+  .seo-content {padding-block:19px 46px}
+  .seo-hero {padding:18px 0 19px}
+  .seo-hero h1 {font-size:clamp(2rem,7vw,3rem);line-height:1.1}
+  .seo-columns {gap:20px}
+  .seo-nav {gap:12px;padding-block:10px}
+  .seo-nav nav {font-size:14px;gap:7px 15px}
+}

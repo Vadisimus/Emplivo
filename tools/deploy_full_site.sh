@@ -43,6 +43,10 @@ parent=$(cd -- "$target/.." && pwd -P)
 target="$parent/www"
 [[ $release_root != "$target" && $release_root != "$target/"* ]] || fail 'Extract the release outside www.'
 [[ -d $source_dir && -f $source_dir/index.html && -f $release_root/manifest.sha256 && -f $release_root/source-revision.txt && -s $release_root/http-checks.tsv ]] || fail 'Release is incomplete.'
+frontend=0
+if [[ -s $release_root/frontend-assets.sha256 ]]; then
+    frontend=1
+fi
 [[ ! -L $target/.htaccess && ! -L $parent/deploy-backups ]] || fail 'Symlinked .htaccess/backup directory requires manual review.'
 [[ ! -e $target/emplivo-private && ! -L $target/emplivo-private && ! -e $target/telegram-state && ! -L $target/telegram-state ]] || fail 'Private config/state found inside www; review its location before publishing.'
 exec 9>"$parent/.emplivo-deploy.lock"
@@ -53,6 +57,9 @@ while IFS= read -r line; do
     rel=${BASH_REMATCH[1]}
     [[ $rel != /* && ! $rel =~ (^|/)\.\.(/|$) && $rel != . && $rel != */ ]] || fail 'Unsafe release path.'
     [[ $rel != emplivo-private/* && $rel != telegram-state/* && $rel != .git/* && $rel != www/* ]] || fail 'Private/nested root in release.'
+    if [[ $frontend == 1 && ! $rel =~ ^([A-Za-z0-9_/-]*index\.html|wellness\.(css|js)|seo\.css|vacancies\.css|localization-ru\.js|assets/workplace-hero(-small)?\.webp)$ ]]; then
+        fail "Unexpected file in design update: $rel"
+    fi
     [[ -f $source_dir/$rel && ! -L $source_dir/$rel ]] || fail 'Payload file missing or symlinked.'
     cursor=$target
     IFS=/ read -r -a components <<< "$rel"
@@ -66,11 +73,12 @@ while IFS= read -r line; do
 done < "$release_root/manifest.sha256"
 [[ ${#files[@]} -gt 70 ]] || fail 'Unexpectedly small website release.'
 (cd -- "$release_root" && sha256sum -c manifest.sha256 >/dev/null)
-for rel in "${files[@]}"; do
-    if [[ $rel == *.php ]]; then php -l "$source_dir/$rel" >/dev/null; fi
-done
-[[ -r $parent/emplivo-private/telegram.php ]] || fail 'Existing private Telegram config not found; no files changed.'
-general_status=$(php -r '
+if [[ $frontend == 0 ]]; then
+    for rel in "${files[@]}"; do
+        if [[ $rel == *.php ]]; then php -l "$source_dir/$rel" >/dev/null; fi
+    done
+    [[ -r $parent/emplivo-private/telegram.php ]] || fail 'Existing private Telegram config not found; no files changed.'
+    general_status=$(php -r '
 require $argv[1] . "/api/lib/TelegramConfig.php";
 $path=$argv[2] . "/emplivo-private/config.php";
 if (!is_file($path)) { echo "NOT_CONFIGURED"; exit; }
@@ -81,6 +89,7 @@ try {
  echo $ok ? "CONFIGURED" : "NOT_CONFIGURED";
 } catch (Throwable $e) { fwrite(STDERR,"Private site config has an invalid PHP format; contents hidden.\n"); exit(1); }
 ' "$source_dir" "$parent")
+fi
 size_kb=$(du -sk "$target" | awk '{print $1}')
 free_kb=$(df -Pk "$parent" | awk 'NR==2 {print $4}')
 [[ $size_kb =~ ^[0-9]+$ && $free_kb =~ ^[0-9]+$ ]] || fail 'Cannot determine backup disk space.'
@@ -89,52 +98,69 @@ mkdir -p -- "$parent/deploy-backups"
 chmod 700 "$parent/deploy-backups"
 backup_dir=$(mktemp -d "$parent/deploy-backups/full-site-$(date -u +%Y%m%dT%H%M%SZ)-XXXXXX")
 printf '%s\n' "${existing[@]}" > "$backup_dir/restore-files.txt"
-if [[ -e $target/.htaccess ]]; then
-    printf './.htaccess\n' >> "$backup_dir/restore-files.txt"
-else
-    added+=(.htaccess)
-fi
 tar -czpf "$backup_dir/www-before.tar.gz" -C "$target" .
 tar -tzf "$backup_dir/www-before.tar.gz" >/dev/null
-for name in config.php telegram.php; do
-    if [[ -f $parent/emplivo-private/$name ]]; then sha256sum "$parent/emplivo-private/$name" >> "$backup_dir/private-before.sha256"; fi
-done
 printf 'Backup created: %s\n' "$backup_dir/www-before.tar.gz"
 
 # Keep all existing hosting directives; select the new static homepage first.
-if [[ -f $target/.htaccess ]]; then
-    sed '/^# BEGIN EMPLIVO STATIC ENTRY$/,/^# END EMPLIVO STATIC ENTRY$/d' "$target/.htaccess" > "$backup_dir/new-htaccess"
-else
-    : > "$backup_dir/new-htaccess"
-fi
-cat >> "$backup_dir/new-htaccess" <<'HTACCESS'
+if [[ $frontend == 0 ]]; then
+    for name in config.php telegram.php; do
+        if [[ -f $parent/emplivo-private/$name ]]; then sha256sum "$parent/emplivo-private/$name" >> "$backup_dir/private-before.sha256"; fi
+    done
+    if [[ -e $target/.htaccess ]]; then
+        printf './.htaccess\n' >> "$backup_dir/restore-files.txt"
+        sed '/^# BEGIN EMPLIVO STATIC ENTRY$/,/^# END EMPLIVO STATIC ENTRY$/d' "$target/.htaccess" > "$backup_dir/new-htaccess"
+    else
+        added+=(.htaccess)
+        : > "$backup_dir/new-htaccess"
+    fi
+    cat >> "$backup_dir/new-htaccess" <<'HTACCESS'
 
 # BEGIN EMPLIVO STATIC ENTRY
 DirectoryIndex disabled
 DirectoryIndex index.html index.php
 # END EMPLIVO STATIC ENTRY
 HTACCESS
+fi
 applied=1
 for rel in "${files[@]}"; do
     destination_dir=$(dirname -- "$target/$rel")
     if [[ ! -d $destination_dir ]]; then install -d -m 755 -- "$destination_dir"; fi
     install -m 644 -- "$source_dir/$rel" "$target/$rel"
 done
-install -m 644 -- "$backup_dir/new-htaccess" "$target/.htaccess"
-for name in config.php telegram.php; do
-    if [[ -f $parent/emplivo-private/$name ]]; then sha256sum "$parent/emplivo-private/$name" >> "$backup_dir/private-after.sha256"; fi
-done
-cmp -s "$backup_dir/private-before.sha256" "$backup_dir/private-after.sha256" || fail 'Private configuration changed during deployment.'
+if [[ $frontend == 0 ]]; then
+    install -m 644 -- "$backup_dir/new-htaccess" "$target/.htaccess"
+    for name in config.php telegram.php; do
+        if [[ -f $parent/emplivo-private/$name ]]; then sha256sum "$parent/emplivo-private/$name" >> "$backup_dir/private-after.sha256"; fi
+    done
+    cmp -s "$backup_dir/private-before.sha256" "$backup_dir/private-after.sha256" || fail 'Private configuration changed during deployment.'
+fi
 
 counter=0
+query=''
+if [[ $frontend == 1 ]]; then
+    query="?emplivo_design=$(date +%s)"
+fi
 while IFS=$'\t' read -r route expected; do
     [[ $route =~ ^/[A-Za-z0-9_./-]*$ && $route != //* && -n $expected ]] || fail 'Invalid web check in the package.'
     counter=$((counter+1))
     body="$backup_dir/http-page-$counter.body"
-    curl -fsSL --proto '=https' --proto-redir '=https' --max-redirs 3 --connect-timeout 8 --max-time 20 "https://www.emplivo.com.ua$route" -o "$body" || fail "Page request failed: $route"
+    curl -fsSL --proto '=https' --proto-redir '=https' --max-redirs 3 --connect-timeout 8 --max-time 20 "https://www.emplivo.com.ua$route$query" -o "$body" || fail "Page request failed: $route"
     grep -Fq -- "$expected" "$body" || fail "New page not served at: $route"
 done < "$release_root/http-checks.tsv"
 grep -Fq 'https://t.me/Emplivobot?start=apply' "$backup_dir/http-page-1.body" || fail 'Telegram application link missing from homepage.'
+if [[ $frontend == 1 ]]; then
+    while IFS=' ' read -r expected rel; do
+        [[ $expected =~ ^[a-f0-9]{64}$ && $rel =~ ^(wellness\.(css|js)|seo\.css|vacancies\.css|localization-ru\.js|assets/workplace-hero(-small)?\.webp)$ ]] || fail 'Invalid design asset check.'
+        body="$backup_dir/http-design-asset.body"
+        curl -fsSL --proto '=https' --proto-redir '=https' --max-redirs 3 --connect-timeout 8 --max-time 20 "https://www.emplivo.com.ua/$rel$query" -o "$body" || fail "Asset request failed: $rel"
+        actual=$(sha256sum "$body")
+        [[ ${actual%% *} == "$expected" ]] || fail "Updated asset not served at: /$rel"
+    done < "$release_root/frontend-assets.sha256"
+    trap - ERR INT TERM
+    printf '\nDEPLOY_OK\nSource: %s\nSite: https://www.emplivo.com.ua/\nBackup: %s\nWebsite routes verified: %s\n' "$(cat "$release_root/source-revision.txt")" "$backup_dir/www-before.tar.gz" "$counter"
+    exit 0
+fi
 curl -fsSL --proto '=https' --proto-redir '=https' --max-redirs 3 --connect-timeout 8 --max-time 20 https://www.emplivo.com.ua/telegram-config.js -o "$backup_dir/http-telegram-config.body"
 grep -Eq '"botEnabled"[[:space:]]*:[[:space:]]*true' "$backup_dir/http-telegram-config.body" || fail 'Public bot configuration not active.'
 curl -fsSL --proto '=https' --proto-redir '=https' --max-redirs 3 --connect-timeout 8 --max-time 20 https://www.emplivo.com.ua/assets/wellness-atlas.png -o "$backup_dir/http-hero.body"

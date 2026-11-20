@@ -10,3 +10,7 @@
 .vacancy-facts dt{font-weight:700}
 .vacancy-facts dd{margin:0 0 .75rem}
 @media(max-width:640px){.vacancy-form-grid{grid-template-columns:1fr}}
+
+#vacancy-brief label,#vacancy-brief-result label {font-size:14px;line-height:1.5}
+#vacancy-brief small,.vacancy-facts dt {font-size:13px;color:#64675e}
+.vacancy-facts dd {margin-bottom:.85rem;font-size:16px;overflow-wrap:anywhere}

@@ -84,6 +84,8 @@ class LocaleHTML(HTMLParser):
                     value = localized_text(value, self.words)
                 elif (tag in ('a','link') and key == 'href') or (tag == 'meta' and key == 'content' and data.get('property') == 'og:url'):
                     value = self.link(value)
+                elif tag == 'form' and key == 'action':
+                    value = self.link(value)
             result.append(' ' + key + ('="' + escape(value, quote=True) + '"' if value is not None else ''))
         self.output.append('<' + tag + ''.join(result) + '>')
 
