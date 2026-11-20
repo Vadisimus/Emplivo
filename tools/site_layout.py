@@ -87,7 +87,7 @@ def page(lang, route, title, description, body, *, schemas=(), noindex=False, la
 <html lang="{lang}"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{escape(title)} | Emplivo</title>
-<meta name="description" content="{description}"><meta name="theme-color" content="#F9F7F2">
+<meta name="description" content="{description}"><meta name="theme-color" content="#FBFBF9">
 <meta name="robots" content="{"noindex,follow" if noindex else "index,follow"}">
 <link rel="canonical" href="{canonical}">
 {alternates}<meta property="og:type" content="website"><meta property="og:url" content="{canonical}">
@@ -100,10 +100,13 @@ def page(lang, route, title, description, body, *, schemas=(), noindex=False, la
 </head><body>
 <a class="skip" href="#main">{t('До основного вмісту','Skip to content','К основному содержанию')}</a>
 <header class="site-header"><div class="wrap header-inner">
-<a class="brand" href="{local}"><img src="{pref}assets/mark.svg" alt="" width="36" height="36">Emplivo</a>
+<a class="brand" href="{local}"><img src="{pref}assets/mark.svg" alt="" width="40" height="40">
+<span class="brand-type">Emplivo<small>TALENT &amp; SEARCH</small></span></a>
 <nav class="navigation" aria-label="{t('Головна навігація','Main navigation','Главная навигация')}"><ul>{navigation}</ul></nav>
 <div class="utilities">
-<a href="{local}saved/">{t('Збережені','Saved','Сохранённые')} <span class="badge" data-saved-count>0</span></a>
+<a class="saved-link" href="{local}saved/">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 4h12v17l-6-4-6 4V4Z"/></svg>
+<span class="saved-label">{t('Збережені','Saved','Сохранённые')}</span><span class="badge" data-saved-count>0</span></a>
 <nav class="languages" aria-label="{t('Мова сайту','Website language','Язык сайта')}">{switches}</nav>
 <button type="button" class="button secondary menu-toggle" data-menu-toggle aria-expanded="false" aria-controls="site-menu" aria-haspopup="dialog" hidden>{t('Меню','Menu','Меню')}</button>
 </div></div></header>
@@ -125,5 +128,6 @@ def page(lang, route, title, description, body, *, schemas=(), noindex=False, la
 </ul></nav>
 <div><a href="mailto:hr@emplivo.com.ua">hr@emplivo.com.ua</a><br><a href="tel:+380677778060">+380 (67) 777 80 60</a><br>{community} {bots}</div>
 </div></footer>
+<div class="save-toast" data-save-toast role="status" aria-live="polite" aria-atomic="true"></div>
 </body></html>
 '''

@@ -31,6 +31,14 @@ SERVICES = (
       'Review available engagement models, agree terms and plan onboarding.',
       'Проверим варианты сотрудничества, согласуем условия и составим план онбординга.')),
 )
+ICONS = {
+    'bookmark': '<path d="M6 4h12v17l-6-4-6 4V4Z"/>',
+    'globe': '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18Z"/>',
+    'clock': '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    'shield': '<path d="m12 3 8 3v6c0 4-3.5 7.3-8 9-4.5-1.7-8-5-8-9V6l8-3Z"/><path d="m9 12 2 2 4-4"/>',
+    'pause': '<path d="M9 6v12M15 6v12"/>',
+    'play': '<path d="m9 5 10 7-10 7V5Z"/>',
+}
 
 
 def translate(lang):
@@ -39,6 +47,12 @@ def translate(lang):
 
 def cta(href, label, extra=''):
     return f'<a class="button{extra}" href="{escape(href, quote=True)}">{escape(label)}</a>'
+
+
+def icon(name, css_class):
+    return (f'<svg class="{css_class}" width="24" height="24" viewBox="0 0 24 24" fill="none" '
+            'stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" '
+            f'aria-hidden="true" focusable="false">{ICONS[name]}</svg>')
 
 
 def card(job, lang, route):
@@ -86,7 +100,8 @@ def card(job, lang, route):
 <p data-location>{escape(copy['location'])}</p>
 <div class="job-meta">{badges}</div>
 <p>{escape(pay)}</p><p class="muted">{date_label} <time datetime="{day}">{day}</time></p>
-<div class="job-actions">{action}<button type="button" class="button secondary" data-save-job="{job['id']}" aria-pressed="false" hidden>{t('Зберегти','Save','Сохранить')}</button></div>
+<div class="job-actions">{action}<button type="button" class="button secondary job-save" data-save-job="{job['id']}" aria-pressed="false" hidden>
+{icon('bookmark','job-save-icon')} {t('Зберегти','Save','Сохранить')}</button></div>
 </article>'''
 
 
@@ -100,25 +115,53 @@ def workplace(pref, lang):
 <img src="{pref}assets/workplace-hero.webp" width="1000" height="1250" fetchpriority="high" alt="{alt}"></picture>'''
 
 
+def hero_visual(pref, lang):
+    t = translate(lang)
+    metrics = (
+        ('reach', 'globe', t('Україна & ЄС', 'Ukraine & EU', 'Украина и ЕС'),
+         t('Локальний та remote найм', 'Local and remote hiring', 'Локальный и удалённый найм')),
+        ('timing', 'clock', t('12–14 днів', '12–14 days', '12–14 дней'),
+         t('Сер. термін до офферу', 'Average time to offer', 'Средний срок до оффера')),
+        ('guarantee', 'shield', t('90 днів гарантії', '90-day guarantee', '90 дней гарантии'),
+         t('Безкоштовна заміна фахівця', 'Free candidate replacement', 'Бесплатная замена специалиста')),
+    )
+    notes = '\n'.join(
+        f'''<div class="hero-note hero-note--{key} card-shimmer float-slow-{position}">
+  <span class="hero-note-icon">{icon(symbol,'hero-note-svg')}</span>
+  <div><strong>{escape(heading)}</strong><span>{escape(description)}</span></div>
+</div>'''
+        for position, (key, symbol, heading, description) in enumerate(metrics, 1)
+    )
+    return f'''<div class="hero-visual">
+  <div class="hero-photo">{workplace(pref,lang)}</div>
+  {notes}
+  <button class="motion-toggle" type="button" data-hero-motion-toggle aria-pressed="false"
+          aria-label="{t('Пауза анімації','Pause animation','Пауза анимации')}" hidden>
+    {icon('pause','motion-pause')}{icon('play','motion-play')}
+  </button>
+</div>'''
+
+
 def home(lang, jobs):
     t = translate(lang)
     pref = root_prefix(lang, '')
     local = pref + locale_prefix(lang)
-    title = t('Робота й підбір персоналу в різних галузях', 'Jobs and recruitment across industries',
-              'Работа и подбор персонала в разных отраслях')
+    title = t('Робота й підбір персоналу', 'Jobs and recruitment', 'Работа и подбор персонала')
+    accent = t('нового рівня.', 'at a new level.', 'нового уровня.')
     desc = t('Знайдіть вакансію за вашою спеціальністю або доручіть Emplivo пошук фахівців для команди.',
              'Find a role in your field or work with Emplivo to hire for your team.',
              'Найдите вакансию по своей специальности или поручите Emplivo подбор для вашей команды.')
     hubs = ''.join(f'<article class="panel"><h3><a href="{local}jobs/{slug}/">{escape(select(lang, value[0]))}</a></h3></article>'
                    for slug, value in HUBS.items())
-    body = f'''<section class="hero"><div><h1 class="accent-heading">{title}</h1><p class="reading">{desc}</p>
+    body = f'''<section class="hero hero--editorial" data-hero-motion><div class="hero-copy">
+<h1 class="accent-heading">{title} <span class="editorial-italic">{accent}</span></h1><p class="reading">{desc}</p>
 <div class="button-row">{cta(local + 'jobs/',t('Переглянути вакансії','Find jobs','Найти вакансии'))}
 {cta(local + 'submit-vacancy/',t('Подати вакансію','Submit a vacancy','Подать вакансию'),' secondary')}</div>
 <form class="hero-search" method="get" action="{local}jobs/">
 <label class="field">{t('Посада або ключове слово','Job title or keyword','Должность или ключевое слово')}
 <input type="search" name="q" maxlength="120"></label>
 <button class="button" type="submit">{t('Шукати','Search','Поиск')}</button></form>
-</div>{workplace(pref,lang)}</section>
+</div>{hero_visual(pref,lang)}</section>
 <section class="section" id="vacancies"><h2 class="accent-heading">{t('Актуальні вакансії','Current vacancies','Актуальные вакансии')}</h2>
 {listing_grid(jobs[:3],lang,'')}</section>
 <section class="section"><h2 class="accent-heading">{t('Напрями підбору','Industries','Отрасли')}</h2><div class="cards">{hubs}</div></section>
@@ -134,7 +177,7 @@ def home(lang, jobs):
 <section class="cta" id="application"><h2 class="accent-heading">{t('Залиште резюме','Send your CV','Отправьте резюме')}</h2>
 <p>{t('Підготуйте резюме у форматі PDF або DOCX.','Prepare a PDF or DOCX CV.','Подготовьте резюме в PDF или DOCX.')}</p>
 {cta(local + 'apply/',t('Відкрити анкету','Open the form','Открыть анкету'))}</section>'''
-    return page(lang, '', title, desc, body, modules=('jobs.mjs',))
+    return page(lang, '', f'{title} {accent}', desc, body, modules=('jobs.mjs',))
 
 
 def listing_grid(jobs, lang, route):
