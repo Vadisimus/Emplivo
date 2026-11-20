@@ -1,16 +1,16 @@
 <?xml version='1.0' encoding='utf-8'?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://www.emplivo.com.ua/</loc>
-  </url>
-  <url>
     <loc>https://www.emplivo.com.ua/about/</loc>
   </url>
   <url>
-    <loc>https://www.emplivo.com.ua/blog/</loc>
+    <loc>https://www.emplivo.com.ua/apply/</loc>
   </url>
   <url>
     <loc>https://www.emplivo.com.ua/blog/hiring-spa-therapists/</loc>
+  </url>
+  <url>
+    <loc>https://www.emplivo.com.ua/blog/</loc>
   </url>
   <url>
     <loc>https://www.emplivo.com.ua/blog/personal-trainer-employment/</loc>
@@ -34,16 +34,16 @@
     <loc>https://www.emplivo.com.ua/employers/temporary-recruitment/</loc>
   </url>
   <url>
-    <loc>https://www.emplivo.com.ua/en/</loc>
-  </url>
-  <url>
     <loc>https://www.emplivo.com.ua/en/about/</loc>
   </url>
   <url>
-    <loc>https://www.emplivo.com.ua/en/blog/</loc>
+    <loc>https://www.emplivo.com.ua/en/apply/</loc>
   </url>
   <url>
     <loc>https://www.emplivo.com.ua/en/blog/hiring-spa-therapists/</loc>
+  </url>
+  <url>
+    <loc>https://www.emplivo.com.ua/en/blog/</loc>
   </url>
   <url>
     <loc>https://www.emplivo.com.ua/en/blog/personal-trainer-employment/</loc>
@@ -67,13 +67,25 @@
     <loc>https://www.emplivo.com.ua/en/employers/temporary-recruitment/</loc>
   </url>
   <url>
+    <loc>https://www.emplivo.com.ua/en/</loc>
+  </url>
+  <url>
     <loc>https://www.emplivo.com.ua/en/insights/</loc>
+  </url>
+  <url>
+    <loc>https://www.emplivo.com.ua/en/jobs/hospitality-wellness/</loc>
   </url>
   <url>
     <loc>https://www.emplivo.com.ua/en/jobs/</loc>
   </url>
   <url>
+    <loc>https://www.emplivo.com.ua/en/jobs/it-digital/</loc>
+  </url>
+  <url>
     <loc>https://www.emplivo.com.ua/en/jobs/personal-trainer/</loc>
+  </url>
+  <url>
+    <loc>https://www.emplivo.com.ua/en/jobs/sales-service/</loc>
   </url>
   <url>
     <loc>https://www.emplivo.com.ua/en/jobs/spa-therapist/</loc>
@@ -100,13 +112,37 @@
     <loc>https://www.emplivo.com.ua/en/salary-guide/wellness-manager/</loc>
   </url>
   <url>
+    <loc>https://www.emplivo.com.ua/en/submit-vacancy/</loc>
+  </url>
+  <url>
+    <loc>https://www.emplivo.com.ua/en/vacancies/ever-tech-product-engineer/</loc>
+  </url>
+  <url>
+    <loc>https://www.emplivo.com.ua/en/vacancies/ever-tech-product-engineer-intern/</loc>
+  </url>
+  <url>
+    <loc>https://www.emplivo.com.ua/en/vacancies/ever-tech-senior-product-engineer/</loc>
+  </url>
+  <url>
+    <loc>https://www.emplivo.com.ua/</loc>
+  </url>
+  <url>
     <loc>https://www.emplivo.com.ua/insights/</loc>
+  </url>
+  <url>
+    <loc>https://www.emplivo.com.ua/jobs/hospitality-wellness/</loc>
   </url>
   <url>
     <loc>https://www.emplivo.com.ua/jobs/</loc>
   </url>
   <url>
+    <loc>https://www.emplivo.com.ua/jobs/it-digital/</loc>
+  </url>
+  <url>
     <loc>https://www.emplivo.com.ua/jobs/personal-trainer/</loc>
+  </url>
+  <url>
+    <loc>https://www.emplivo.com.ua/jobs/sales-service/</loc>
   </url>
   <url>
     <loc>https://www.emplivo.com.ua/jobs/spa-therapist/</loc>
@@ -121,28 +157,16 @@
     <loc>https://www.emplivo.com.ua/privacy/</loc>
   </url>
   <url>
-    <loc>https://www.emplivo.com.ua/salary-guide/</loc>
-  </url>
-  <url>
-    <loc>https://www.emplivo.com.ua/salary-guide/personal-trainer/</loc>
-  </url>
-  <url>
-    <loc>https://www.emplivo.com.ua/salary-guide/spa-therapist/</loc>
-  </url>
-  <url>
-    <loc>https://www.emplivo.com.ua/salary-guide/wellness-manager/</loc>
-  </url>
-  <url>
-    <loc>https://www.emplivo.com.ua/ru/</loc>
-  </url>
-  <url>
     <loc>https://www.emplivo.com.ua/ru/about/</loc>
   </url>
   <url>
-    <loc>https://www.emplivo.com.ua/ru/blog/</loc>
+    <loc>https://www.emplivo.com.ua/ru/apply/</loc>
   </url>
   <url>
     <loc>https://www.emplivo.com.ua/ru/blog/hiring-spa-therapists/</loc>
+  </url>
+  <url>
+    <loc>https://www.emplivo.com.ua/ru/blog/</loc>
   </url>
   <url>
     <loc>https://www.emplivo.com.ua/ru/blog/personal-trainer-employment/</loc>
@@ -166,13 +190,25 @@
     <loc>https://www.emplivo.com.ua/ru/employers/temporary-recruitment/</loc>
   </url>
   <url>
+    <loc>https://www.emplivo.com.ua/ru/</loc>
+  </url>
+  <url>
     <loc>https://www.emplivo.com.ua/ru/insights/</loc>
+  </url>
+  <url>
+    <loc>https://www.emplivo.com.ua/ru/jobs/hospitality-wellness/</loc>
   </url>
   <url>
     <loc>https://www.emplivo.com.ua/ru/jobs/</loc>
   </url>
   <url>
+    <loc>https://www.emplivo.com.ua/ru/jobs/it-digital/</loc>
+  </url>
+  <url>
     <loc>https://www.emplivo.com.ua/ru/jobs/personal-trainer/</loc>
+  </url>
+  <url>
+    <loc>https://www.emplivo.com.ua/ru/jobs/sales-service/</loc>
   </url>
   <url>
     <loc>https://www.emplivo.com.ua/ru/jobs/spa-therapist/</loc>
@@ -199,37 +235,37 @@
     <loc>https://www.emplivo.com.ua/ru/salary-guide/wellness-manager/</loc>
   </url>
   <url>
-    <loc>https://www.emplivo.com.ua/en/submit-vacancy/</loc>
-  </url>
-  <url>
-    <loc>https://www.emplivo.com.ua/en/vacancies/ever-tech-product-engineer-intern/</loc>
-  </url>
-  <url>
-    <loc>https://www.emplivo.com.ua/en/vacancies/ever-tech-product-engineer/</loc>
-  </url>
-  <url>
-    <loc>https://www.emplivo.com.ua/en/vacancies/ever-tech-senior-product-engineer/</loc>
-  </url>
-  <url>
     <loc>https://www.emplivo.com.ua/ru/submit-vacancy/</loc>
-  </url>
-  <url>
-    <loc>https://www.emplivo.com.ua/ru/vacancies/ever-tech-product-engineer-intern/</loc>
   </url>
   <url>
     <loc>https://www.emplivo.com.ua/ru/vacancies/ever-tech-product-engineer/</loc>
   </url>
   <url>
+    <loc>https://www.emplivo.com.ua/ru/vacancies/ever-tech-product-engineer-intern/</loc>
+  </url>
+  <url>
     <loc>https://www.emplivo.com.ua/ru/vacancies/ever-tech-senior-product-engineer/</loc>
+  </url>
+  <url>
+    <loc>https://www.emplivo.com.ua/salary-guide/</loc>
+  </url>
+  <url>
+    <loc>https://www.emplivo.com.ua/salary-guide/personal-trainer/</loc>
+  </url>
+  <url>
+    <loc>https://www.emplivo.com.ua/salary-guide/spa-therapist/</loc>
+  </url>
+  <url>
+    <loc>https://www.emplivo.com.ua/salary-guide/wellness-manager/</loc>
   </url>
   <url>
     <loc>https://www.emplivo.com.ua/submit-vacancy/</loc>
   </url>
   <url>
-    <loc>https://www.emplivo.com.ua/vacancies/ever-tech-product-engineer-intern/</loc>
+    <loc>https://www.emplivo.com.ua/vacancies/ever-tech-product-engineer/</loc>
   </url>
   <url>
-    <loc>https://www.emplivo.com.ua/vacancies/ever-tech-product-engineer/</loc>
+    <loc>https://www.emplivo.com.ua/vacancies/ever-tech-product-engineer-intern/</loc>
   </url>
   <url>
     <loc>https://www.emplivo.com.ua/vacancies/ever-tech-senior-product-engineer/</loc>

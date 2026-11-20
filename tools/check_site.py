@@ -6,10 +6,11 @@ from urllib.parse import urlsplit, urljoin, unquote
 import urllib.request
 import urllib.error
 import json
+import os
 import xml.etree.ElementTree as ET
 
 ROOT=Path(__file__).resolve().parents[1]
-BASE='http://127.0.0.1:8082'
+BASE=os.environ.get('EMPLIVO_TEST_URL', 'http://127.0.0.1:8082')
 
 class Document(HTMLParser):
     def __init__(self,text):
@@ -39,9 +40,9 @@ for f in ROOT.rglob('index.html'):
     assert not any(s in text for s in ['Помічник кухаря','Kitchen Helper','kitchen-helper-ua-001','+380631395033','+380 63 139 50 33']),route
     assert '+380677778060' in text or '+380 (67) 777 80 60' in text,route
     assert doc.schemas,route
-    if '/demo-' in route:
-        assert doc.noindex,route
-        assert 'JobPosting' not in text and 'AggregateRating' not in text,route
+    assert 'demo-' not in route and '?demo=1' not in text, route
+    assert text.count('class="site-header"') == text.count('class="site-footer"') == 1, route
+    assert 'design.css?v=' in text and 'wellness.css' not in text and 'seo.css' not in text, route
     with urllib.request.urlopen(BASE+route,timeout=5) as r:assert r.status==200,route
     docs[route]=doc
 
@@ -63,7 +64,7 @@ for loc in locs:
     assert path in docs and not docs[path].noindex,(loc,'bad sitemap entry')
 assert all('/demo-' not in loc for loc in locs)
 
-for asset in ['styles.css','modern.css','seo.css','seo.js','app.js','translations.js','jobs-data.js']:
+for asset in ['design.css','navigation.mjs','jobs.mjs','intake.mjs','intake-config.mjs','assets/recruitment-preview.jpg']:
     with urllib.request.urlopen(BASE+'/'+asset,timeout=5) as r:assert r.status==200
 try:urllib.request.urlopen(BASE+'/api/applications.php',timeout=5)
 except urllib.error.HTTPError as e:assert e.code==405 and 'message' in json.loads(e.read())

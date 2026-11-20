@@ -70,7 +70,7 @@ Review failures weekly, conversions monthly, and salary/local content quarterly.
 
 ## Rebuild
 
-Run `python tools/build_demo.py` from this checkout. The command is offline and deterministic; it regenerates editorial pages, the English homepage, sitemap and robots.txt. The Ukrainian homepage and shared application remain hand-maintained.
+Use `python tools/build_vacancies.py` to rebuild the current catalogue and its shared page layout.
 
 ## Latest requested changes
 

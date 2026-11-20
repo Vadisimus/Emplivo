@@ -47,6 +47,10 @@ frontend=0
 if [[ -s $release_root/frontend-assets.sha256 ]]; then
     frontend=1
 fi
+modern=0
+if [[ -f $source_dir/design.css ]]; then
+    modern=1
+fi
 [[ ! -L $target/.htaccess && ! -L $parent/deploy-backups ]] || fail 'Symlinked .htaccess/backup directory requires manual review.'
 [[ ! -e $target/emplivo-private && ! -L $target/emplivo-private && ! -e $target/telegram-state && ! -L $target/telegram-state ]] || fail 'Private config/state found inside www; review its location before publishing.'
 exec 9>"$parent/.emplivo-deploy.lock"
@@ -57,7 +61,7 @@ while IFS= read -r line; do
     rel=${BASH_REMATCH[1]}
     [[ $rel != /* && ! $rel =~ (^|/)\.\.(/|$) && $rel != . && $rel != */ ]] || fail 'Unsafe release path.'
     [[ $rel != emplivo-private/* && $rel != telegram-state/* && $rel != .git/* && $rel != www/* ]] || fail 'Private/nested root in release.'
-    if [[ $frontend == 1 && ! $rel =~ ^([A-Za-z0-9_/-]*index\.html|wellness\.(css|js)|seo\.css|vacancies\.css|localization-ru\.js|assets/workplace-hero(-small)?\.webp)$ ]]; then
+    if [[ $frontend == 1 && ! $rel =~ ^([A-Za-z0-9_/-]*index\.html|wellness\.(css|js)|seo\.css|vacancies\.css|localization-ru\.js|design\.css|(navigation|jobs|intake|intake-config)\.mjs|assets/(recruitment-preview\.jpg|workplace-hero(-small)?\.webp))$ ]]; then
         fail "Unexpected file in design update: $rel"
     fi
     [[ -f $source_dir/$rel && ! -L $source_dir/$rel ]] || fail 'Payload file missing or symlinked.'
@@ -107,6 +111,8 @@ if [[ $frontend == 0 ]]; then
     for name in config.php telegram.php; do
         if [[ -f $parent/emplivo-private/$name ]]; then sha256sum "$parent/emplivo-private/$name" >> "$backup_dir/private-before.sha256"; fi
     done
+fi
+if [[ $frontend == 0 || $modern == 1 ]]; then
     if [[ -e $target/.htaccess ]]; then
         printf './.htaccess\n' >> "$backup_dir/restore-files.txt"
         sed '/^# BEGIN EMPLIVO STATIC ENTRY$/,/^# END EMPLIVO STATIC ENTRY$/d' "$target/.htaccess" > "$backup_dir/new-htaccess"
@@ -119,8 +125,21 @@ if [[ $frontend == 0 ]]; then
 # BEGIN EMPLIVO STATIC ENTRY
 DirectoryIndex disabled
 DirectoryIndex index.html index.php
-# END EMPLIVO STATIC ENTRY
 HTACCESS
+    if [[ $modern == 1 ]]; then
+        cat >> "$backup_dir/new-htaccess" <<'HTACCESS'
+<IfModule mod_mime.c>
+  AddType text/javascript .mjs
+</IfModule>
+<IfModule mod_alias.c>
+  RedirectMatch 410 "^/(en/|ru/)?demo-(jobs|account|employers|employer-dashboard)(/|$)"
+  RedirectMatch 301 "^/cases/?$" "https://www.emplivo.com.ua/employers/#services"
+  RedirectMatch 301 "^/en/cases/?$" "https://www.emplivo.com.ua/en/employers/#services"
+  RedirectMatch 301 "^/ru/cases/?$" "https://www.emplivo.com.ua/ru/employers/#services"
+</IfModule>
+HTACCESS
+    fi
+    printf '%s\n' '# END EMPLIVO STATIC ENTRY' >> "$backup_dir/new-htaccess"
 fi
 applied=1
 for rel in "${files[@]}"; do
@@ -128,8 +147,10 @@ for rel in "${files[@]}"; do
     if [[ ! -d $destination_dir ]]; then install -d -m 755 -- "$destination_dir"; fi
     install -m 644 -- "$source_dir/$rel" "$target/$rel"
 done
-if [[ $frontend == 0 ]]; then
+if [[ $frontend == 0 || $modern == 1 ]]; then
     install -m 644 -- "$backup_dir/new-htaccess" "$target/.htaccess"
+fi
+if [[ $frontend == 0 ]]; then
     for name in config.php telegram.php; do
         if [[ -f $parent/emplivo-private/$name ]]; then sha256sum "$parent/emplivo-private/$name" >> "$backup_dir/private-after.sha256"; fi
     done
@@ -151,7 +172,7 @@ done < "$release_root/http-checks.tsv"
 grep -Fq 'https://t.me/Emplivobot?start=apply' "$backup_dir/http-page-1.body" || fail 'Telegram application link missing from homepage.'
 if [[ $frontend == 1 ]]; then
     while IFS=' ' read -r expected rel; do
-        [[ $expected =~ ^[a-f0-9]{64}$ && $rel =~ ^(wellness\.(css|js)|seo\.css|vacancies\.css|localization-ru\.js|assets/workplace-hero(-small)?\.webp)$ ]] || fail 'Invalid design asset check.'
+        [[ $expected =~ ^[a-f0-9]{64}$ && $rel =~ ^(wellness\.(css|js)|seo\.css|vacancies\.css|localization-ru\.js|design\.css|(navigation|jobs|intake|intake-config)\.mjs|assets/(recruitment-preview\.jpg|workplace-hero(-small)?\.webp))$ ]] || fail 'Invalid design asset check.'
         body="$backup_dir/http-design-asset.body"
         curl -fsSL --proto '=https' --proto-redir '=https' --max-redirs 3 --connect-timeout 8 --max-time 20 "https://www.emplivo.com.ua/$rel$query" -o "$body" || fail "Asset request failed: $rel"
         actual=$(sha256sum "$body")

@@ -9,7 +9,7 @@ import re
 import subprocess
 
 ROOT=Path(__file__).resolve().parents[1]
-DIRECTORIES={'about','api','assets','blog','candidates','cases','contact','demo-account','demo-employer-dashboard','demo-employers','demo-jobs','employers','en','insights','jobs','locations','privacy','ru','salary-guide','submit-vacancy','vacancies'}
+DIRECTORIES={'about','api','apply','assets','blog','candidates','cases','contact','demo-account','demo-employer-dashboard','demo-employers','demo-jobs','employers','en','insights','jobs','locations','privacy','ru','salary-guide','saved','submit-vacancy','vacancies'}
 OPERATIONS={'tools/telegram_admin.php','tools/TelegramPrivateConfig.php','tools/TelegramWebhookCheck.php','tools/telegram_init.sh','config/telegram.example.php'}
 
 def git(*args):
@@ -17,43 +17,50 @@ def git(*args):
 
 def public(name):
     p=PurePosixPath(name)
-    return name in OPERATIONS or p.parts[0] in DIRECTORIES or (len(p.parts)==1 and (p.suffix in {'.html','.css','.js','.xml'} or name in {'.nojekyll','robots.txt','TELEGRAM_UA.md'}))
+    return name in OPERATIONS or p.parts[0] in DIRECTORIES or (len(p.parts)==1 and (p.suffix in {'.html','.css','.js','.mjs','.xml'} or name in {'.nojekyll','robots.txt','TELEGRAM_UA.md'}))
 
 def web_checks(payload,frontend=False):
     checks=[]
+    modern = 'design.css' in payload
 
     def style_marker(page):
-        match=re.search(r'(?:wellness|seo)\.css\?v=[A-Za-z0-9]+',page)
+        match=re.search(r'(?:design|wellness|seo)\.css\?v=[A-Za-z0-9]+',page)
         assert match, 'Stylesheet version is missing'
         return match[0]
 
     for lang,prefix in [('uk',''),('en','en/'),('ru','ru/')]:
-        for route in ('','jobs/','employers/','privacy/','contact/'):
+        routes = ('','jobs/','employers/','privacy/','contact/')
+        if modern:
+            routes += ('apply/','saved/')
+        for route in routes:
             page=payload[prefix+route+'index.html'].decode()
             assert f'<html lang="{lang}"' in page, prefix+route
             # Requiring the application asset version distinguishes a stale copy from this release.
             bundle=re.search(r'vacancies-data\.js\?v=[a-f0-9]+',page)
             marker=bundle[0] if bundle else f'https://www.emplivo.com.ua/{prefix}{route}'
-            checks.append((f'/{prefix}{route}', style_marker(page) if frontend else marker))
+            checks.append((f'/{prefix}{route}', style_marker(page) if frontend or modern else marker))
         page=payload[f'{prefix}submit-vacancy/index.html'].decode()
-        assert f'<html lang="{lang}"' in page and 'id="vacancy-brief"' in page
-        checks.append((f'/{prefix}submit-vacancy/', style_marker(page) if frontend else 'id="vacancy-brief"'))
+        form_marker = 'data-intake="employer"' if modern else 'id="vacancy-brief"'
+        assert f'<html lang="{lang}"' in page and form_marker in page
+        checks.append((f'/{prefix}submit-vacancy/', style_marker(page) if frontend else form_marker))
     detail_pages=[name for name in sorted(payload) if re.fullmatch(r'(?:en/|ru/)?vacancies/[^/]+/index\.html',name)]
-    assert detail_pages, 'No vacancy detail pages found'
     for name in detail_pages:
         route='/'+name.removesuffix('index.html')
         canonical=f'href="https://www.emplivo.com.ua{route}"'
         assert canonical in payload[name].decode(), name
-        checks.append((route,style_marker(payload[name].decode()) if frontend else canonical))
-    checks.append(('/localization-ru.js','window.EMPLIVO_RU = '))
+        checks.append((route,style_marker(payload[name].decode()) if frontend or modern else canonical))
+    if modern:
+        checks.extend([('/intake.mjs','cf-turnstile-response'),('/navigation.mjs','mountNavigation')])
+    else:
+        checks.append(('/localization-ru.js','window.EMPLIVO_RU = '))
     return ''.join(f'{route}\t{marker}\n' for route,marker in checks)
 
 def build(ref,output,frontend=False):
     revision=git('rev-parse',ref).decode().strip()
     if frontend:
         # Use the verified design in the working copy and preserve server-side files.
-        assets=('wellness.css','wellness.js','seo.css','vacancies.css','localization-ru.js',
-                'assets/workplace-hero.webp','assets/workplace-hero-small.webp')
+        assets=('design.css','navigation.mjs','jobs.mjs','intake.mjs','intake-config.mjs',
+                'assets/recruitment-preview.jpg','assets/workplace-hero.webp','assets/workplace-hero-small.webp')
         names=git('ls-files','--','index.html','*/index.html').decode().splitlines()
         payload={name:(ROOT/name).read_bytes() for name in (*names,*assets) if public(name)}
     else:

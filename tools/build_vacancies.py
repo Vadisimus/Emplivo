@@ -2,12 +2,13 @@
 """Render recruitment and public-source vacancies for PHP hosting and GitHub Pages."""
 import argparse
 from datetime import date, datetime, time
-import hashlib
 from html import escape
 import json
 from pathlib import Path
 import re
 from urllib.parse import quote, urlsplit
+
+from site_layout import page
 import xml.etree.ElementTree as ET
 from zoneinfo import ZoneInfo
 
@@ -159,39 +160,10 @@ def translator(lang):
 
 
 def page_shell(lang, route, title, description, body, *, languages=LOCALES, schema=None, noindex=False):
-    t = translator(lang)
-    pref = '../' * len(route.rstrip('/').split('/'))
-    local = pref + locale_path(lang)
-    uk_route = route.removeprefix(locale_path(lang))
-    alternates = ''.join(f'<link rel="alternate" hreflang="{code}" href="{SITE}{locale_path(code)}{uk_route}">' for code in languages)
-    links = []
-    for code in languages:
-        short, name = LOCALE_NAMES[code]
-        current = ' aria-current="page"' if code == lang else ''
-        links.append(f'<a class="seo-language" hreflang="{code}" lang="{code}" aria-label="{name}"{current} href="{pref}{locale_path(code)}{uk_route}">{short}</a>')
-    switch = '<div class="seo-language-options">' + ''.join(links) + '</div>'
-    structured = f'<script type="application/ld+json">{json_html(schema or {"@context": "https://schema.org", "@type": "WebPage", "name": title, "url": SITE + route, "inLanguage": lang})}</script>'
-    return f'''<!doctype html>
-{MARKER}
-<html lang="{lang}"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{escape(title)} | Emplivo</title><meta name="description" content="{escape(description)}">
-<link rel="canonical" href="{SITE}{route}">
-{alternates}
-<link rel="alternate" hreflang="x-default" href="{SITE}{uk_route}">
-<meta name="robots" content="{"noindex,follow" if noindex else "index,follow"}">
-<link rel="icon" href="{pref}assets/mark.svg">
-<link rel="stylesheet" href="{pref}styles.css"><link rel="stylesheet" href="{pref}modern.css">
-<link rel="stylesheet" href="{pref}seo.css?v=20261119palette"><link rel="stylesheet" href="{pref}vacancies.css?v=20261119palette">
-{structured}<script defer src="{pref}vacancy-tools.js"></script>
-</head><body class="seo-page">
-<a class="skip" href="#main">{t("До основного вмісту","Skip to content")}</a>
-<header class="seo-header"><div class="shell seo-nav"><a class="brand" href="{local}"><span class="brand-emblem" aria-hidden="true">E</span> EMPLIVO</a>
-<nav aria-label="{t("Головна навігація","Main navigation")}"><a href="{local}jobs/">{t("Вакансії","Vacancies")}</a><a href="{local}employers/">{t("Роботодавцям","For employers")}</a><a href="{local}submit-vacancy/">{t("Подати вакансію","Submit a vacancy")}</a></nav>{switch}</div></header>
-<main id="main" class="shell seo-content">{body}</main>
-<footer class="seo-footer"><div class="shell"><a href="{local}privacy/">{t("Конфіденційність","Privacy")}</a> · <a href="mailto:hr@emplivo.com.ua">hr@emplivo.com.ua</a> · <a href="tel:+380677778060">+380 (67) 777 80 60</a></div></footer>
-</body></html>
-'''
+    crumb = translator(lang)('Вакансії', 'Vacancies')
+    return page(lang, route.removeprefix(locale_path(lang)), title, description, body,
+                languages=languages, schemas=(schema,) if schema else (), noindex=noindex,
+                crumbs=((crumb, 'jobs/'),), modules=('jobs.mjs',), marker=MARKER)
 
 
 def vacancy_page(job, lang, active):
@@ -215,9 +187,12 @@ def vacancy_page(job, lang, active):
         f'<section class="seo-section"><h2>{label}</h2><ul>' + ''.join(f'<li>{escape(item)}</li>' for item in copy[key]) + '</ul></section>'
         for key, label in [('duties', t('Обов’язки','Responsibilities')), ('requirements', t('Вимоги','Requirements')), ('conditions', t('Умови','Conditions'))]
     )
-    apply_url = job.get('applyUrl') or ('mailto:hr@emplivo.com.ua?subject=' + quote(f'Emplivo [{job["id"]}] — {copy["title"]}'))
-    recipient = t('Форма роботодавця відкриється за посиланням.', 'The link opens the employer’s application form.') if job.get('applyUrl') else t(
-        'Лист відкриється у поштовій програмі. Додайте резюме й надішліть його команді Emplivo.', 'Your email app opens a draft. Attach your CV and send it to the Emplivo team.')
+    apply_url = job.get('applyUrl') or ('../../apply/?vacancy=' + quote(job['id']))
+    recipient = t('Форма роботодавця відкриється за посиланням.', 'The link opens the employer’s application form.') if job.get('applyUrl') else {
+        'uk': 'Резюме отримає команда Emplivo.',
+        'en': 'Emplivo will receive your CV.',
+        'ru': 'Резюме получит команда Emplivo.',
+    }[lang]
     closed = t('Прийом відгуків завершено.', 'Applications are closed.')
     source_label = ''
     location = escape(copy['location'])
@@ -255,159 +230,76 @@ def vacancy_page(job, lang, active):
             'validThrough': datetime.combine(date.fromisoformat(job['validThrough']), time(23, 59, 59), KYIV).isoformat(),
             'employmentType': job['employment'], 'inLanguage': lang,
         }
-        if job['mode'] == 'remote':
+        if work_modes(job) == ['remote']:
             schema['jobLocationType'] = 'TELECOMMUTE'
             schema['applicantLocationRequirements'] = {'@type': 'Country', 'name': job['country']}
         else:
             schema['jobLocation'] = {'@type': 'Place', 'address': {
                 '@type': 'PostalAddress', 'addressLocality': copy['location'], 'addressCountry': job['country']}}
         if salary and salary['gross']:
+            amount = {'value': low} if low == high else {'minValue': low, 'maxValue': high}
             schema['baseSalary'] = {'@type': 'MonetaryAmount', 'currency': salary['currency'],
-                                    'value': {'@type': 'QuantitativeValue', 'minValue': low, 'maxValue': high, 'unitText': salary['unit']}}
+                                    'value': {'@type': 'QuantitativeValue', **amount, 'unitText': salary['unit']}}
     return page_shell(lang, locale_path(lang) + f"vacancies/{job['id']}/", copy['title'], copy['summary'], body,
                       languages=tuple(code for code in LOCALES if job.get(code)), schema=schema, noindex=not active)
 
 
-def employer_form(lang):
-    t = translator(lang)
-
-    def field(name, label, *, limit=120, kind='text', optional=False, hint=''):
-        control = f'<textarea name="{name}" rows="4" maxlength="{limit}"' if kind == 'textarea' else f'<input name="{name}" type="{kind}"' + (f' maxlength="{limit}"' if kind not in ('date', 'url') else '')
-        control += '' if optional else ' required'
-        control += '></textarea>' if kind == 'textarea' else '>'
-        return f'<label>{label}{control}' + (f'<small>{hint}</small>' if hint else '') + '</label>'
-
-    def select(name, label, items):
-        return f'<label>{label}<select name="{name}" required><option value="">{t("Оберіть","Select")}</option>' + ''.join(
-            f'<option>{escape(t(*labels))}</option>' for labels in items.values()) + '</select></label>'
-
-    title = t('Подати вакансію', 'Submit a vacancy')
-    description = t('Заповніть бриф для перевірки та публікації вакансії в каталозі Emplivo.', 'Prepare a brief for Emplivo to review before publishing your vacancy.')
-    form = ''.join([
-        field('company', t('Назва компанії','Company name')),
-        field('title', t('Назва посади','Job title')),
-        select('industry', t('Галузь','Industry'), SECTORS),
-        field('location', t('Країна та місто або регіон найму','Country and city or hiring region')),
-        select('mode', t('Формат роботи','Work arrangement'), MODES),
-        select('employment', t('Зайнятість','Employment type'), TERMS),
-        field('salary', t('Зарплата, валюта й період','Pay, currency and pay period'), optional=True,
-              hint=t('Також вкажіть, до чи після податків.','Include whether the amount is gross or net.')),
-        field('schedule', t('Графік','Schedule'), limit=200),
-        field('deadline', t('Приймаємо відгуки до','Applications accepted until'), kind='date'),
-        field('contact', t('Робочий email для зв’язку з вами','Work email for Emplivo to contact you'), kind='email', limit=254),
-        field('summary', t('Коротко про вакансію','Short description'), kind='textarea', limit=500),
-        field('duties', t('Обов’язки','Responsibilities'), kind='textarea', limit=1200),
-        field('requirements', t('Вимоги','Requirements'), kind='textarea', limit=1200),
-        field('conditions', t('Умови роботи','Working conditions'), kind='textarea', limit=1200),
-        field('applyUrl', t('Посилання для відгуку, якщо є','Application link, if available'), kind='url', optional=True),
-    ])
-    body = f'''<div class="seo-hero"><h1>{title}</h1><p class="seo-lead">{description}</p>
-<p>{t('Команда зв’яжеться з вами, щоб підтвердити вакансію та погодити умови підбору.', 'The team will contact you to confirm the vacancy and agree recruitment terms.')}</p></div>
-<form id="vacancy-brief" method="post" hidden>
-<div class="vacancy-form-grid">{form}</div>
-<label class="vacancy-approval"><input type="checkbox" name="approval" required> {t('Я представляю роботодавця й уповноважений подати цю вакансію на розгляд.', 'I represent the employer and am authorized to submit this vacancy for review.')}</label>
-<p><a href="../privacy/">{t('Політика конфіденційності','Privacy policy')}</a></p>
-<button class="button primary" type="submit">{t('Підготувати лист','Prepare email')}</button></form>
-<div id="vacancy-brief-result" hidden>
-<h2 tabindex="-1">{t('Бриф підготовлено','Your brief is ready')}</h2>
-<p>{t('Відкрийте поштову програму й надішліть лист. Якщо програма не відкриється, скопіюйте текст і надішліть його на hr@emplivo.com.ua.', 'Open your email app and send the draft. If it does not open, copy the brief and send it to hr@emplivo.com.ua.')}</p>
-<a class="button primary" id="vacancy-brief-email" href="mailto:hr@emplivo.com.ua">{t('Відкрити лист','Open email draft')}</a>
-<label>{t('Текст брифу','Brief text')}<textarea id="vacancy-brief-text" rows="14" readonly></textarea></label></div>
-<p><a href="mailto:hr@emplivo.com.ua">{t('Написати команді Emplivo','Email the Emplivo team')}</a></p>'''
-    return page_shell(lang, locale_path(lang) + 'submit-vacancy/', title, description, body)
-
-
-def public_job(job):
-    lang_copy = {lang: job.get(lang) or job['uk'] for lang in LOCALES}
-    external = job['status'] == 'external'
-    return {
-        'id': job['id'], 'company': job['company'], 'sector': job['sector'], 'workFormats': work_modes(job),
-        'employment': job['employment'], 'salary': {key: job['salary'][key] for key in ('min','max','currency','unit','gross')} if job.get('salary') else None,
-        'title': {lang: copy['title'] for lang, copy in lang_copy.items()},
-        'city': {lang: copy['location'] for lang, copy in lang_copy.items()},
-        'payNote': {lang: copy.get('payNote', '') for lang, copy in lang_copy.items()},
-        'external': external, 'listedOn': listing_date(job),
-        'datePosted': None if external else job['datePosted'], 'validThrough': None if external else job['validThrough'],
-        'languages': [lang for lang in LOCALES if job.get(lang)], 'management': job.get('management') is True,
-    }
-
-
-def update_catalog_html(root, active):
-    for lang in LOCALES:
-        prefix = locale_path(lang)
-        t = translator(lang)
-        for rel in ('index.html', 'jobs/index.html'):
-            path = root / (prefix + rel)
-            source = path.read_text(encoding='utf-8')
-            base = '../' * (int(lang != 'uk') + int(rel.startswith('jobs/'))) or './'
-            latest = active if rel.startswith('jobs/') else active[:4]
-            links = []
-            for job in latest:
-                job_lang = lang if job.get(lang) else 'uk'
-                route = locale_path(job_lang) + f"vacancies/{job['id']}/"
-                label = job[job_lang]['title']
-                source_label = t(' · Оголошення роботодавця',' · Employer listing') if job['status'] == 'external' else ''
-                links.append(f'<li><a href="{base}{route}">{escape(label)}</a> · {escape(job["company"])}{source_label}</li>')
-            rendered = '<ul>' + ''.join(links) + '</ul>' if links else (
-                '<p>' + t('Активних вакансій поки немає.','No active vacancies yet.') + '</p>')
-            pattern = r'<!-- VACANCIES:START -->.*?<!-- VACANCIES:END -->'
-            updated, count = re.subn(pattern, lambda _: '<!-- VACANCIES:START -->' + rendered + '<!-- VACANCIES:END -->', source, flags=re.S)
-            require(count == 1, f'{path}: vacancy snapshot markers missing or duplicated')
-            path.write_text(updated, encoding='utf-8')
-
-
 def build(root, source, today):
+    from site_catalog import catalog, saved
+    from site_pages import HUBS, cases, contact, employers, home, hub, intake_page, wrap_editorial, write
+
     jobs = read_jobs(source)
-    active = sorted((j for j in jobs if (j['status'] == 'external' and j['sourceChecked'] <= today)
-                     or (j['status'] == 'published' and j['datePosted'] <= today <= j['validThrough'])),
-                    key=lambda j: (j['status'] != 'published', -date.fromisoformat(listing_date(j)).toordinal(), j['id']))
+    active = sorted((job for job in jobs if (job['status'] == 'external' and job['sourceChecked'] <= today)
+                     or (job['status'] == 'published' and job['datePosted'] <= today <= job['validThrough'])),
+                    key=lambda job: (-date.fromisoformat(listing_date(job)).toordinal(), job['id']))
     active_ids = {job['id'] for job in active}
-    urls = []
+    saved_jobs = active + [{**job, 'status': 'closed'} for job in jobs
+                          if job['status'] in ('published', 'closed') and listing_date(job) <= today and job['id'] not in active_ids]
     generated = set()
     for lang in LOCALES:
         prefix = locale_path(lang)
-        form = prefix + 'submit-vacancy/'
-        write_page(root / form / 'index.html', employer_form(lang))
-        urls.append(SITE + form)
+        core = {'': home(lang, active), 'jobs/': catalog(lang, active), 'saved/': saved(lang, saved_jobs),
+                'employers/': employers(lang), 'contact/': contact(lang), 'cases/': cases(lang),
+                'apply/': intake_page(lang, 'apply'), 'submit-vacancy/': intake_page(lang, 'employer')}
+        core.update({f'jobs/{slug}/': hub(lang, slug, active) for slug in HUBS})
+        for route, html in core.items():
+            write(root, lang, route, html)
         for job in jobs:
             if job['status'] == 'draft' or listing_date(job) > today or not job.get(lang):
                 continue
-            route = prefix + f"vacancies/{job['id']}/"
-            page = root / route / 'index.html'
-            is_active = job['id'] in active_ids
-            write_page(page, vacancy_page(job, lang, is_active))
-            generated.add(page)
-            if is_active:
-                urls.append(SITE + route)
+            path = root / prefix / f'vacancies/{job["id"]}/index.html'
+            write_page(path, vacancy_page(job, lang, job['id'] in active_ids))
+            generated.add(path)
         for old in (root / prefix / 'vacancies').glob('*/index.html'):
             if old not in generated and MARKER in old.read_text(encoding='utf-8'):
                 old.unlink()
-    data = {'sectors': localized(SECTORS), 'modes': localized(MODES), 'terms': localized(TERMS),
-            'jobs': [public_job(job) for job in active]}
-    script = 'window.EMPLIVO_VACANCIES = ' + json_html(data) + ';\n'
-    (root / 'vacancies-data.js').write_text(script, encoding='utf-8')
-    update_catalog_html(root, active)
-    version = hashlib.sha256(script.encode()).hexdigest()[:12]
-    app_version = hashlib.sha256((root / 'wellness.js').read_bytes()).hexdigest()[:12]
-    for page in (*root.glob('index.html'), *root.glob('*/index.html'), *root.glob('en/*/index.html'), *root.glob('ru/*/index.html')):
-        old = page.read_text(encoding='utf-8')
-        new = re.sub(r'vacancies-data\.js\?v=[A-Za-z0-9_-]+', f'vacancies-data.js?v={version}', old)
-        new = re.sub(r'wellness\.js\?v=[A-Za-z0-9_-]+', f'wellness.js?v={app_version}', new)
-        if new != old:
-            page.write_text(new, encoding='utf-8')
-    sitemap = root / 'sitemap.xml'
+        for directory in ('about', 'blog', 'candidates', 'employers', 'insights', 'jobs', 'locations', 'privacy', 'salary-guide'):
+            for path in (root / prefix / directory).rglob('index.html'):
+                route = path.relative_to(root / prefix).as_posix().removesuffix('index.html')
+                if route in core:
+                    continue
+                original = path.read_text(encoding='utf-8')
+                updated = wrap_editorial(original, lang, route)
+                if updated != original:
+                    path.write_text(updated, encoding='utf-8')
+
+    sitemap = ET.Element(f'{{{NS}}}urlset')
     ET.register_namespace('', NS)
-    tree = ET.parse(sitemap)
-    for item in list(tree.getroot()):
-        loc = item.findtext(f'{{{NS}}}loc') or ''
-        if re.fullmatch(re.escape(SITE) + r'(?:en/|ru/)?(?:vacancies/[^/]+/|submit-vacancy/)', loc):
-            tree.getroot().remove(item)
-    for url in sorted(urls):
-        node = ET.SubElement(tree.getroot(), f'{{{NS}}}url')
-        ET.SubElement(node, f'{{{NS}}}loc').text = url
+    for path in sorted(root.rglob('index.html')):
+        relative = path.relative_to(root)
+        if any(part.startswith(('.', 'demo-')) for part in relative.parts) or relative.parts[0] in ('www', 'downloads'):
+            continue
+        text = path.read_text(encoding='utf-8').split('</head>', 1)[0]
+        if 'name="robots" content="noindex' in text:
+            continue
+        canonical = re.search(r'<link rel="canonical" href="([^"]+)"', text)
+        if canonical is not None:
+            node = ET.SubElement(sitemap, f'{{{NS}}}url')
+            ET.SubElement(node, f'{{{NS}}}loc').text = canonical[1]
+    tree = ET.ElementTree(sitemap)
     ET.indent(tree, space='  ')
-    tree.write(sitemap, encoding='utf-8', xml_declaration=True)
-    print(f'Catalog built: {len(active)} open vacancies, {len(generated)} vacancy pages.')
+    tree.write(root / 'sitemap.xml', encoding='utf-8', xml_declaration=True)
+    print(f'Public site built: {len(active)} open vacancies, {len(generated)} vacancy pages.')
 
 
 if __name__ == '__main__':
