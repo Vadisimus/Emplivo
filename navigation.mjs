@@ -1,4 +1,11 @@
 const SAVED_KEY = 'ec-saved'; // Existing Emplivo installations already use this key.
+const BOOKMARK_MESSAGES = {
+  uk: ['Вакансію збережено', 'Вакансію вилучено зі збережених'],
+  en: ['Job saved', 'Job removed from saved jobs'],
+  ru: ['Вакансия сохранена', 'Вакансия удалена из сохранённых'],
+};
+const bookmarkAnimations = new WeakMap();
+let toastTimer;
 
 function readSaved() {
   try {
@@ -22,13 +29,36 @@ export function syncSavedUI() {
   }
 }
 
+function notifyBookmark(button, added) {
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches && button.animate) {
+    bookmarkAnimations.get(button)?.cancel();
+    const animation = button.animate([
+      { transform: 'scale(1)' },
+      { transform: 'scale(1.13)', offset: .36 },
+      { transform: 'scale(.95)', offset: .68 },
+      { transform: 'scale(1)' },
+    ], { duration: 400, easing: 'ease-out' });
+    bookmarkAnimations.set(button, animation);
+  }
+  const toast = document.querySelector('[data-save-toast]');
+  if (!toast) return;
+  const messages = BOOKMARK_MESSAGES[document.documentElement.lang] ?? BOOKMARK_MESSAGES.uk;
+  toast.textContent = messages[added ? 0 : 1];
+  toast.dataset.visible = '';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    delete toast.dataset.visible;
+  }, 2800);
+}
+
 function toggleSave(event) {
   const button = event.target.closest('[data-save-job]');
   if (!button) return;
   const id = button.dataset.saveJob;
   if (!/^[a-z0-9-]+$/.test(id) || id.startsWith('demo-')) return;
-  if (saved.has(id)) saved.delete(id);
-  else saved.add(id);
+  const added = !saved.has(id);
+  if (added) saved.add(id);
+  else saved.delete(id);
   try {
     localStorage.setItem(SAVED_KEY, JSON.stringify([...saved]));
   } catch {
@@ -36,7 +66,21 @@ function toggleSave(event) {
     if (status) status.textContent = status.dataset.storageUnavailable;
   }
   syncSavedUI();
+  notifyBookmark(button, added);
   document.dispatchEvent(new Event('emplivo:saved'));
+}
+
+function mountHeroMotion() {
+  const hero = document.querySelector('[data-hero-motion]');
+  const toggle = hero?.querySelector('[data-hero-motion-toggle]');
+  if (!hero || !toggle) return;
+  hero.dataset.heroMotion = 'running';
+  toggle.hidden = false;
+  toggle.addEventListener('click', () => {
+    const paused = hero.dataset.heroMotion === 'running';
+    hero.dataset.heroMotion = paused ? 'paused' : 'running';
+    toggle.setAttribute('aria-pressed', String(paused));
+  });
 }
 
 export function mountNavigation() {
@@ -73,6 +117,7 @@ export function mountNavigation() {
     document.dispatchEvent(new Event('emplivo:saved'));
   });
   syncSavedUI();
+  mountHeroMotion();
 }
 
 if (typeof document !== 'undefined') mountNavigation();

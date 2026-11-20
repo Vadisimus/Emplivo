@@ -61,7 +61,7 @@ while IFS= read -r line; do
     rel=${BASH_REMATCH[1]}
     [[ $rel != /* && ! $rel =~ (^|/)\.\.(/|$) && $rel != . && $rel != */ ]] || fail 'Unsafe release path.'
     [[ $rel != emplivo-private/* && $rel != telegram-state/* && $rel != .git/* && $rel != www/* ]] || fail 'Private/nested root in release.'
-    if [[ $frontend == 1 && ! $rel =~ ^([A-Za-z0-9_/-]*index\.html|wellness\.(css|js)|seo\.css|vacancies\.css|localization-ru\.js|design\.css|(navigation|jobs|intake|intake-config)\.mjs|assets/(recruitment-preview\.jpg|workplace-hero(-small)?\.webp))$ ]]; then
+    if [[ $frontend == 1 && ! $rel =~ ^([A-Za-z0-9_/-]*index\.html|wellness\.(css|js)|seo\.css|vacancies\.css|localization-ru\.js|design\.css|(navigation|jobs|intake|intake-config)\.mjs|assets/(mark\.svg|recruitment-preview\.jpg|workplace-hero(-small)?\.webp))$ ]]; then
         fail "Unexpected file in design update: $rel"
     fi
     [[ -f $source_dir/$rel && ! -L $source_dir/$rel ]] || fail 'Payload file missing or symlinked.'
@@ -172,7 +172,7 @@ done < "$release_root/http-checks.tsv"
 grep -Fq 'https://t.me/Emplivobot?start=apply' "$backup_dir/http-page-1.body" || fail 'Telegram application link missing from homepage.'
 if [[ $frontend == 1 ]]; then
     while IFS=' ' read -r expected rel; do
-        [[ $expected =~ ^[a-f0-9]{64}$ && $rel =~ ^(wellness\.(css|js)|seo\.css|vacancies\.css|localization-ru\.js|design\.css|(navigation|jobs|intake|intake-config)\.mjs|assets/(recruitment-preview\.jpg|workplace-hero(-small)?\.webp))$ ]] || fail 'Invalid design asset check.'
+        [[ $expected =~ ^[a-f0-9]{64}$ && $rel =~ ^(wellness\.(css|js)|seo\.css|vacancies\.css|localization-ru\.js|design\.css|(navigation|jobs|intake|intake-config)\.mjs|assets/(mark\.svg|recruitment-preview\.jpg|workplace-hero(-small)?\.webp))$ ]] || fail 'Invalid design asset check.'
         body="$backup_dir/http-design-asset.body"
         curl -fsSL --proto '=https' --proto-redir '=https' --max-redirs 3 --connect-timeout 8 --max-time 20 "https://www.emplivo.com.ua/$rel$query" -o "$body" || fail "Asset request failed: $rel"
         actual=$(sha256sum "$body")

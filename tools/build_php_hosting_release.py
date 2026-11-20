@@ -60,7 +60,7 @@ def build(ref,output,frontend=False):
     if frontend:
         # Use the verified design in the working copy and preserve server-side files.
         assets=('design.css','navigation.mjs','jobs.mjs','intake.mjs','intake-config.mjs',
-                'assets/recruitment-preview.jpg','assets/workplace-hero.webp','assets/workplace-hero-small.webp')
+                'assets/mark.svg','assets/recruitment-preview.jpg','assets/workplace-hero.webp','assets/workplace-hero-small.webp')
         names=git('ls-files','--','index.html','*/index.html').decode().splitlines()
         payload={name:(ROOT/name).read_bytes() for name in (*names,*assets) if public(name)}
     else:
