@@ -23,7 +23,7 @@ def catalog(lang, jobs):
     all_options = [('',t('Усі','All','Все'))]
     any_pay = [('',t('Будь-яка оплата','Any pay','Любая оплата'))]
     date_order = ('date',t('Спочатку нові','Newest first','Сначала новые'))
-    city_options = sorted({job.get(lang, job['uk'])['location'] for job in jobs})
+    city_options = sorted({(job.get(lang) or job['uk'])['location'] for job in jobs})
     active_sectors = sorted({job['sector'] for job in jobs} | {'technology','hospitality','sales','spa','wellness','fitness'})
     active_modes = sorted({mode for job in jobs for mode in work_modes(job)} | MODES.keys())
     active_terms = sorted({job['employment'] for job in jobs} | TERMS.keys())

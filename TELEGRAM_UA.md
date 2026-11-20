@@ -244,7 +244,6 @@ php tools/test_telegram_setup.php
 python tools/test_telegram_secret_io.py
 python tools/test_telegram_webhook.py
 python tools/test_telegram_config.py
-node tools/verify_telegram.cjs
 node tools/verify_github_pages.cjs
 ```
 

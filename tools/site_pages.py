@@ -271,6 +271,7 @@ def wrap_editorial(text, lang, route):
     description = re.search(r'<meta name="description" content="([^"]*)"', text)
     desc = unescape(description[1]) if description else title
     main = re.sub(r'<nav class="crumbs".*?</nav>', '', main, count=1, flags=re.S)
+    main = re.sub(r'\s*<p data-saved-status\b[^>]*></p>', '', main)
     main = re.sub(r'<div class="breadcrumbs">.*?</div>', '', main, count=1, flags=re.S)
     main = re.sub(r'<section\b[^>]*>\s*<h2[^>]*>[^<]*(?:demonstration|демонстра|демо|вы́мышлен)[^<]*</h2>.*?</section>',
                   '', main, flags=re.S | re.I)
@@ -285,9 +286,9 @@ def wrap_editorial(text, lang, route):
         t = translate(lang)
         main += f'''<section class="reading" id="online-intake">
 <h2>{t('Онлайн-форми','Online forms','Онлайн-формы')}</h2>
-<p>{t('Якщо форма працює через Cloudflare, прийняті анкети та брифи передаються в закритий чат рекрутерів у Telegram. Обмеження частоти й перевірка Turnstile захищають форми від спаму. Ідентифікатор і статус доставки зберігаються до семи днів для захисту від дублювання.',
-       'When a form uses Cloudflare, accepted applications and briefs are delivered to a private recruitment chat in Telegram. Rate limits and Turnstile protect the forms from spam. The reference and delivery status are kept for up to seven days to prevent duplicates.',
-       'Когда форма работает через Cloudflare, принятые анкеты и брифы отправляются в закрытый чат рекрутеров в Telegram. Ограничения частоты и Turnstile защищают формы от спама. Номер обращения и статус доставки хранятся до семи дней для защиты от дублей.')}</p></section>'''
+<p>{t('Якщо форма працює через Cloudflare, прийняті анкети та брифи передаються в закритий чат рекрутерів у Telegram. Обмеження частоти й перевірка Turnstile захищають форми від спаму. Для захисту від дублювання зберігаємо ідентифікатор і статус доставки. Щоденне очищення видаляє записи, старші за сім днів.',
+       'When a form uses Cloudflare, accepted applications and briefs are delivered to a private recruitment chat in Telegram. Rate limits and Turnstile protect the forms from spam. The reference and delivery status prevent duplicates. Daily cleanup removes records older than seven days.',
+       'Когда форма работает через Cloudflare, принятые анкеты и брифы отправляются в закрытый чат рекрутеров в Telegram. Ограничения частоты и Turnstile защищают формы от спама. Номер обращения и статус доставки защищают от дублей. Ежедневная очистка удаляет записи старше семи дней.')}</p></section>'''
     schemas = []
     for raw in re.findall(r'<script type="application/ld\+json">(.*?)</script>', text, re.S):
         value = json.loads(raw)
