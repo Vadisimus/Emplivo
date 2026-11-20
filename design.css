@@ -163,79 +163,68 @@ summary{min-height:var(--tap);padding:.5rem 0;cursor:pointer;font-weight:650}
 }
 .editorial-italic{display:inline-block;font-style:italic;color:var(--accent);font-weight:400}
 .hero-copy>.reading{max-width:46ch;margin:0 0 1.45rem;color:var(--muted)}
-.hero--editorial .hero-search{max-width:34rem}
-.hero-visual{position:relative;isolation:isolate;min-width:0;padding:.5rem 1rem 1.4rem 2.35rem}
-.hero-photo{position:relative;border-radius:24px;overflow:hidden;box-shadow:0 22px 50px -25px rgba(17,19,21,.42)}
+.hero--editorial :is(.hero-search,.hero-metrics){max-width:34rem}
+.hero-photo{min-width:0;border-radius:24px;overflow:hidden;box-shadow:0 22px 50px -25px rgba(17,19,21,.42)}
 .hero--editorial .hero-photo img{aspect-ratio:1.1;object-position:50% 56%;border-radius:0}
-.hero-photo::after{
-  content:"";position:absolute;inset:0;pointer-events:none;
-  background:linear-gradient(to top,rgba(11,26,19,.23),transparent 34%);
+.hero-metrics{margin-top:.85rem}
+.hero-notes{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.55rem;
+  list-style:none;margin:0;padding:0;
 }
 .hero-note{
-  position:absolute;z-index:1;display:flex;align-items:center;gap:.68rem;
-  min-width:0;max-width:min(100%,16.5rem);padding:.65rem .85rem;
-  border:1px solid rgba(255,255,255,.76);border-radius:.9rem;
-  background:rgba(255,255,255,.92);box-shadow:0 12px 30px -9px rgba(17,19,21,.25);
-  -webkit-backdrop-filter:saturate(1.25) blur(14px);backdrop-filter:saturate(1.25) blur(14px);
+  position:relative;isolation:isolate;display:flex;align-items:center;gap:.46rem;
+  min-width:0;min-height:3.3rem;padding:.5rem .57rem;
+  border:1px solid var(--border);border-radius:.75rem;background:var(--surface);
   color:var(--ink);line-height:1.25;
 }
-.hero-note strong,.hero-note div>span{display:block}
-.hero-note strong{font-size:.96rem;font-weight:735}
-.hero-note div>span{margin-top:.19rem;color:var(--muted);font-size:.78rem}
-.hero-note-icon{display:grid;place-items:center;flex:none;width:2.25rem;height:2.25rem;
-  border-radius:.65rem;background:var(--accent-light);color:var(--accent)}
-.hero-note-svg{width:1.2rem;height:1.2rem}
-.hero-note--reach{inset:12% auto auto 0}
-.hero-note--timing{inset:55% auto auto .38rem;--shimmer-delay:1.2s}
-.hero-note--guarantee{
-  inset:auto 0 0 auto;--shimmer-delay:2.4s;
-  background:linear-gradient(145deg,rgba(255,255,255,.96),rgba(235,243,237,.95));
-  border-color:rgba(198,107,61,.55);
+.hero-note strong{
+  position:relative;z-index:1;min-width:0;font-size:.82rem;font-weight:720;
+  overflow-wrap:anywhere;
 }
-.hero-note--guarantee strong{color:var(--accent)}
+.hero-note-detail{
+  position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;
+}
+.hero-note-icon{
+  position:relative;z-index:1;display:grid;place-items:center;flex:none;width:1.65rem;height:1.65rem;
+  border-radius:.5rem;background:var(--accent-light);color:var(--accent);
+}
+.hero-note-svg{width:.94rem;height:.94rem}
+.hero-note--timing{--shimmer-delay:1.2s}
+.hero-note--guarantee{--shimmer-delay:2.4s}
 .hero-note--guarantee .hero-note-icon{background:var(--terra-tint);color:var(--terra-ink)}
 .card-shimmer{overflow:hidden}
 .card-shimmer::after{
   content:"";position:absolute;top:-50%;left:0;width:35%;height:200%;
-  background:linear-gradient(60deg,transparent,rgba(255,255,255,.65) 50%,transparent);
+  background:linear-gradient(60deg,transparent,rgba(235,243,237,.85) 48%,rgba(255,255,255,.85) 61%,transparent);
   transform:translateX(-230%) rotate(25deg);pointer-events:none;
 }
 .motion-toggle{
-  position:absolute;z-index:2;inset:.95rem 1.45rem auto auto;display:grid;place-items:center;
-  width:var(--tap);height:var(--tap);padding:0;border:1px solid rgba(255,255,255,.52);border-radius:50%;
-  background:rgba(251,251,249,.9);color:var(--accent);cursor:pointer;
+  display:grid;place-items:center;margin-inline-start:auto;
+  width:var(--tap);height:var(--tap);padding:0;border:0;border-radius:.5rem;
+  background:none;color:var(--muted);cursor:pointer;
 }
-.motion-toggle:hover{background:var(--surface)}
+.motion-toggle:hover{background:var(--accent-light);color:var(--accent)}
 .motion-toggle svg{width:1rem;height:1rem}
 .motion-toggle .motion-play,.motion-toggle[aria-pressed="true"] .motion-pause{display:none}
 .motion-toggle[aria-pressed="true"] .motion-play{display:block}
 
-@keyframes float-1{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
-@keyframes float-2{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
-@keyframes float-3{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 @keyframes shimmer-sweep{
   0%{transform:translateX(-230%) rotate(25deg)}
   20%,100%{transform:translateX(460%) rotate(25deg)}
 }
 @media(prefers-reduced-motion:no-preference){
-  :is([data-hero-motion="running"],[data-hero-motion="paused"]) .float-slow-1{animation:float-1 4.5s ease-in-out infinite}
-  :is([data-hero-motion="running"],[data-hero-motion="paused"]) .float-slow-2{animation:float-2 5.2s ease-in-out 1.2s infinite}
-  :is([data-hero-motion="running"],[data-hero-motion="paused"]) .float-slow-3{animation:float-3 4.8s ease-in-out 2.4s infinite}
   :is([data-hero-motion="running"],[data-hero-motion="paused"]) .card-shimmer::after{
     animation:shimmer-sweep 5.5s ease-in-out var(--shimmer-delay,0s) infinite;
   }
-  [data-hero-motion="paused"] .hero-note,[data-hero-motion="paused"] .card-shimmer::after{animation-play-state:paused}
+  [data-hero-motion="paused"] .card-shimmer::after{animation-play-state:paused}
 }
 @media(max-width:58rem){
   .hero--editorial{grid-template-columns:minmax(0,1fr)}
-  .hero-visual{width:100%;max-width:40rem;margin-inline:auto}
 }
 @media(max-width:39.999rem){
-  .hero-note--reach,.hero-note--timing{display:none}
-  .hero-visual{padding:.1rem 0 1.15rem}
-  .hero-note--guarantee{right:.55rem}
+  .hero-notes{gap:.4rem}
+  .hero-note{flex-direction:column;gap:.35rem;padding:.5rem .37rem;text-align:center}
   .hero--editorial .hero-photo img{aspect-ratio:1.3}
-  .motion-toggle{inset:.6rem .55rem auto auto}
   .utilities .saved-label{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
   .languages a{min-width:2.25rem}
   .utilities{column-gap:.25rem}

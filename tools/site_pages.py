@@ -115,7 +115,7 @@ def workplace(pref, lang):
 <img src="{pref}assets/workplace-hero.webp" width="1000" height="1250" fetchpriority="high" alt="{alt}"></picture>'''
 
 
-def hero_visual(pref, lang):
+def hero_metrics(lang):
     t = translate(lang)
     metrics = (
         ('reach', 'globe', t('Україна & ЄС', 'Ukraine & EU', 'Украина и ЕС'),
@@ -126,17 +126,18 @@ def hero_visual(pref, lang):
          t('Безкоштовна заміна фахівця', 'Free candidate replacement', 'Бесплатная замена специалиста')),
     )
     notes = '\n'.join(
-        f'''<div class="hero-note hero-note--{key} card-shimmer float-slow-{position}">
+        f'''<li class="hero-note hero-note--{key} card-shimmer">
   <span class="hero-note-icon">{icon(symbol,'hero-note-svg')}</span>
-  <div><strong>{escape(heading)}</strong><span>{escape(description)}</span></div>
-</div>'''
-        for position, (key, symbol, heading, description) in enumerate(metrics, 1)
+  <strong>{escape(heading)}</strong><span class="hero-note-detail">{escape(description)}</span>
+</li>'''
+        for key, symbol, heading, description in metrics
     )
-    return f'''<div class="hero-visual">
-  <div class="hero-photo">{workplace(pref,lang)}</div>
+    return f'''<div class="hero-metrics">
+  <ul class="hero-notes" role="list" aria-label="{t('Переваги підбору','Recruitment benefits','Преимущества подбора')}">
   {notes}
+  </ul>
   <button class="motion-toggle" type="button" data-hero-motion-toggle aria-pressed="false"
-          aria-label="{t('Пауза анімації','Pause animation','Пауза анимации')}" hidden>
+          aria-label="{t('Пауза блиску','Pause shimmer','Пауза блика')}" hidden>
     {icon('pause','motion-pause')}{icon('play','motion-play')}
   </button>
 </div>'''
@@ -161,7 +162,8 @@ def home(lang, jobs):
 <label class="field">{t('Посада або ключове слово','Job title or keyword','Должность или ключевое слово')}
 <input type="search" name="q" maxlength="120"></label>
 <button class="button" type="submit">{t('Шукати','Search','Поиск')}</button></form>
-</div>{hero_visual(pref,lang)}</section>
+{hero_metrics(lang)}
+</div><div class="hero-photo">{workplace(pref,lang)}</div></section>
 <section class="section" id="vacancies"><h2 class="accent-heading">{t('Актуальні вакансії','Current vacancies','Актуальные вакансии')}</h2>
 {listing_grid(jobs[:3],lang,'')}</section>
 <section class="section"><h2 class="accent-heading">{t('Напрями підбору','Industries','Отрасли')}</h2><div class="cards">{hubs}</div></section>
