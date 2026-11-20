@@ -8,3 +8,6 @@ __pycache__/
 .env.*
 deploy-keys/
 *.pem
+/worker/.dev.vars
+/worker/.dev.vars.*
+/worker/.wrangler/
