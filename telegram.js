@@ -11,8 +11,8 @@
   const botEnabled = raw.botEnabled === true && Boolean(botUsername);
   const botUrl = (payload = '') => botEnabled ? 'https://t.me/' + botUsername + (/^[A-Za-z0-9_-]{1,64}$/.test(payload) ? '?start=' + encodeURIComponent(payload) : '') : '';
   const links = language => [
-    groupUrl && { url: groupUrl, label: language === 'en' ? 'Telegram job group' : 'Група вакансій у Telegram', kind: 'group' },
-    botEnabled && { url: botUrl('apply'), label: language === 'en' ? 'Apply with the Telegram bot' : 'Анкета через Telegram-бота', kind: 'bot' }
+    groupUrl && { url: groupUrl, label: ({en:'Telegram job group',ru:'Группа вакансий в Telegram'})[language] || 'Група вакансій у Telegram', kind: 'group' },
+    botEnabled && { url: botUrl('apply'), label: ({en:'Apply with the Telegram bot',ru:'Анкета через Telegram-бота'})[language] || 'Анкета через Telegram-бота', kind: 'bot' }
   ].filter(Boolean);
   window.emplivoTelegram = Object.freeze({ groupUrl, botUsername, botEnabled, botUrl, links });
 

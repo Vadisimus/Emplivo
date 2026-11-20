@@ -1,0 +1,223 @@
+[
+  {
+    "id": "ever-tech-product-engineer-intern",
+    "status": "external",
+    "company": "Ever Tech",
+    "sector": "technology",
+    "modes": [
+      "hybrid",
+      "remote"
+    ],
+    "employment": "INTERN",
+    "sourceChecked": "2026-11-19",
+    "sourceUrl": "https://github.com/ever-co/jobs/blob/master/ProductEngineerIntern.md",
+    "applyUrl": "https://ever.tech/jobs/product-engineer-ai-operator-intern#job-form",
+    "uk": {
+      "title": "Product Engineer Intern — AI Operator",
+      "location": "Софія або дистанційно з ЄС",
+      "summary": "Оплачуване стажування на 3–6 місяців. Ви працюватимете з AI-агентами під наглядом старшого інженера.",
+      "schedule": "20–40 годин на тиждень",
+      "payNote": "Оплачуване стажування",
+      "duties": [
+        "Працювати з AI-агентами над виправленнями, тестами й документацією проєктів із відкритим кодом.",
+        "Перевіряти запропоновані агентами зміни та працювати в парі з наставником."
+      ],
+      "requirements": [
+        "Мати приклад завершеного проєкту чи внеску в репозиторій.",
+        "Знати TypeScript або іншу типізовану мову, Git, основи SQL і HTTP.",
+        "Мати досвід роботи з AI-агентом для програмування та вміти писати робочі оновлення англійською."
+      ],
+      "conditions": [
+        "Гібридний формат у Софії або дистанційно з ЄС.",
+        "Компанія надає ноутбук, бюджет на AI-моделі та наставника."
+      ]
+    },
+    "en": {
+      "title": "Product Engineer Intern — AI Operator",
+      "location": "Sofia or remote from the EU",
+      "summary": "A paid 3–6 month internship working with AI agents under a senior engineer’s guidance.",
+      "schedule": "20–40 hours per week",
+      "payNote": "Paid internship",
+      "duties": [
+        "Use AI agents to work on fixes, tests and documentation for open-source projects.",
+        "Review changes proposed by agents and pair with a mentor."
+      ],
+      "requirements": [
+        "Show a completed project or contribution in a repository.",
+        "Know TypeScript or another typed language, Git, basic SQL and HTTP.",
+        "Have experience using an AI coding agent and be able to write project updates in English."
+      ],
+      "conditions": [
+        "Hybrid in Sofia or remote from the EU.",
+        "The employer provides a laptop, model budget and assigned mentor."
+      ]
+    },
+    "ru": {
+      "title": "Стажёр-инженер продукта — AI Operator",
+      "location": "София или дистанционно из ЕС",
+      "summary": "Оплачиваемая стажировка на 3–6 месяцев. Вы будете работать с ИИ-агентами под руководством старшего инженера.",
+      "schedule": "20–40 часов в неделю",
+      "payNote": "Оплачиваемая стажировка",
+      "duties": [
+        "Использовать ИИ-агентов для исправлений, тестирования и документации в проектах с открытым кодом.",
+        "Проверять изменения, предложенные агентами, и работать в паре с наставником."
+      ],
+      "requirements": [
+        "Показать завершённый проект или вклад в репозиторий.",
+        "Знать TypeScript или другой типизированный язык, Git, основы SQL и HTTP.",
+        "Иметь опыт работы с ИИ-агентом для программирования и уметь писать обновления по проекту на английском."
+      ],
+      "conditions": [
+        "Гибридный формат в Софии или дистанционно из ЕС.",
+        "Работодатель предоставляет ноутбук, бюджет на ИИ-модели и наставника."
+      ]
+    }
+  },
+  {
+    "id": "ever-tech-product-engineer",
+    "status": "external",
+    "company": "Ever Tech",
+    "sector": "technology",
+    "modes": [
+      "remote"
+    ],
+    "employment": "FULL_TIME",
+    "sourceChecked": "2026-11-19",
+    "sourceUrl": "https://github.com/ever-co/jobs/blob/master/ProductEngineer.md",
+    "applyUrl": "https://ever.tech/jobs/product-engineer-ai-operator#job-form",
+    "uk": {
+      "title": "Product Engineer — AI Operator",
+      "location": "Софія або дистанційно в часових поясах ЄС",
+      "summary": "Роль інженера, який відповідає за результат клієнтських проєктів і якість роботи невеликої групи AI-агентів.",
+      "schedule": "Повний робочий день",
+      "payNote": "Оклад і частка від оплачуваних клієнтами годин роботи агентів",
+      "duties": [
+        "Керувати роботою AI-агентів і перевіряти якість результатів у клієнтських проєктах.",
+        "Вести комунікацію з клієнтами та працювати над архітектурою і складними частинами продукту."
+      ],
+      "requirements": [
+        "Від 3 років розробки й випуску вебпродуктів.",
+        "Досвід у TypeScript, PostgreSQL, Git і тестуванні.",
+        "Практичний досвід роботи з AI-агентами для програмування та письмова англійська."
+      ],
+      "conditions": [
+        "Дистанційно в часових поясах ЄС або робота в Софії.",
+        "25 днів відпустки, обладнання, бюджет на AI-моделі й конференції."
+      ]
+    },
+    "en": {
+      "title": "Product Engineer — AI Operator",
+      "location": "Sofia or remote in EU time zones",
+      "summary": "An engineering role responsible for client outcomes and the quality of work delivered by a small team of AI agents.",
+      "schedule": "Full-time",
+      "payNote": "Salary plus a share of billed agent hours",
+      "duties": [
+        "Operate AI agents and review the quality of their work across client projects.",
+        "Communicate with clients and handle architecture and more complex product work."
+      ],
+      "requirements": [
+        "At least 3 years building and shipping web products.",
+        "Experience with TypeScript, PostgreSQL, Git and testing.",
+        "Practical experience with AI coding agents and clear written English."
+      ],
+      "conditions": [
+        "Remote in EU time zones or based in Sofia.",
+        "25 days of leave, equipment, model budget and conference budget."
+      ]
+    },
+    "ru": {
+      "title": "Инженер продукта — AI Operator",
+      "location": "София или дистанционно в часовых поясах ЕС",
+      "summary": "Инженер отвечает за результат проектов для клиентов и качество работы небольшой группы ИИ-агентов.",
+      "schedule": "Полный рабочий день",
+      "payNote": "Оклад и доля от оплачиваемых клиентами часов работы агентов",
+      "duties": [
+        "Руководить работой ИИ-агентов и проверять качество результатов в проектах для клиентов.",
+        "Общаться с клиентами и работать над архитектурой и сложными частями продукта."
+      ],
+      "requirements": [
+        "От 3 лет разработки и выпуска веб-продуктов.",
+        "Опыт работы с TypeScript, PostgreSQL, Git и тестированием.",
+        "Практический опыт работы с ИИ-агентами для программирования и письменный английский."
+      ],
+      "conditions": [
+        "Дистанционно в часовых поясах ЕС или работа в Софии.",
+        "25 дней отпуска, оборудование, бюджет на ИИ-модели и конференции."
+      ]
+    }
+  },
+  {
+    "id": "ever-tech-senior-product-engineer",
+    "status": "external",
+    "company": "Ever Tech",
+    "sector": "technology",
+    "modes": [
+      "remote"
+    ],
+    "employment": "CONTRACTOR",
+    "management": true,
+    "sourceChecked": "2026-11-19",
+    "sourceUrl": "https://github.com/ever-co/jobs/blob/master/SeniorProductEngineerContract.md",
+    "applyUrl": "https://ever.tech/jobs/senior-product-engineer-ai-operator-contract#job-form",
+    "uk": {
+      "title": "Senior Product Engineer — AI Operator (Contract)",
+      "location": "Дистанційно з будь-якого часового поясу",
+      "summary": "Контракт для старшого інженера. Ви координуватимете клієнтські проєкти й роботу команди AI-агентів.",
+      "schedule": "20–40 годин на тиждень, 4 години перетину з EET",
+      "payNote": "Орієнтир у брифі роботодавця — 49 USD/год",
+      "duties": [
+        "Керувати одним або двома клієнтськими проєктами чи командою.",
+        "Перевіряти результати AI-агентів, приймати архітектурні рішення та наставляти інженерів."
+      ],
+      "requirements": [
+        "Від 6 років досвіду розробки, з них щонайменше 2 роки відповідальності за продукт або команду.",
+        "Глибоке знання принаймні одного стека компанії та досвід паралельної роботи з кількома AI-агентами.",
+        "Вміння вести розмови з клієнтами й планувати виконання проєктів."
+      ],
+      "conditions": [
+        "Дистанційний контракт із погодинною оплатою.",
+        "Розрахунок через Upwork або за рахунком напряму."
+      ]
+    },
+    "en": {
+      "title": "Senior Product Engineer — AI Operator (Contract)",
+      "location": "Remote from any time zone",
+      "summary": "A contract for a senior engineer to lead client engagements and coordinate a team of AI agents.",
+      "schedule": "20–40 hours per week with 4 hours of overlap with EET",
+      "payNote": "Employer’s brief cites a benchmark of 49 USD/hour",
+      "duties": [
+        "Lead one or two client engagements or a team.",
+        "Review AI agent output, make architecture decisions and mentor engineers."
+      ],
+      "requirements": [
+        "At least 6 years shipping software, including 2 years responsible for a product or team.",
+        "Expertise in at least one company stack and experience operating several AI agents in parallel.",
+        "Ability to lead client calls and create delivery plans."
+      ],
+      "conditions": [
+        "Remote contract with hourly pay.",
+        "Payment through Upwork or by direct invoice."
+      ]
+    },
+    "ru": {
+      "title": "Старший инженер продукта — AI Operator (контракт)",
+      "location": "Дистанционно из любого часового пояса",
+      "summary": "Контракт для старшего инженера, который будет руководить проектами для клиентов и координировать работу группы ИИ-агентов.",
+      "schedule": "20–40 часов в неделю, 4 часа пересечения с EET",
+      "payNote": "Ориентир в брифе работодателя — 49 USD/час",
+      "duties": [
+        "Руководить одним или двумя проектами для клиентов либо командой.",
+        "Проверять результаты ИИ-агентов, принимать архитектурные решения и обучать инженеров."
+      ],
+      "requirements": [
+        "От 6 лет разработки, из них не менее 2 лет ответственности за продукт или команду.",
+        "Глубокое знание хотя бы одного стека компании и опыт параллельной работы с несколькими ИИ-агентами.",
+        "Умение общаться с клиентами и планировать выполнение проектов."
+      ],
+      "conditions": [
+        "Дистанционный контракт с почасовой оплатой.",
+        "Расчёт через Upwork или напрямую по счёту."
+      ]
+    }
+  }
+]

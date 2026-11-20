@@ -1,0 +1,24 @@
+{
+  "id": "company-role-city",
+  "status": "draft",
+  "employerApproved": false,
+  "feeAgreed": false,
+  "company": "Назва роботодавця",
+  "sector": "office",
+  "mode": "hybrid",
+  "employment": "FULL_TIME",
+  "country": "UA",
+  "datePosted": "РРРР-ММ-ДД",
+  "validThrough": "РРРР-ММ-ДД",
+  "applyUrl": null,
+  "salary": null,
+  "uk": {
+    "title": "Назва посади",
+    "location": "Місто або регіон найму",
+    "summary": "Кілька речень про посаду і команду",
+    "schedule": "Робочі години або зміни",
+    "duties": ["Підтверджений обов’язок"],
+    "requirements": ["Обов’язкова вимога"],
+    "conditions": ["Підтверджена умова роботи"]
+  }
+}
